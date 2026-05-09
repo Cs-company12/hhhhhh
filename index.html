@@ -1,962 +1,768 @@
 <!DOCTYPE html>
 <html lang="so">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab Management System</title>
-    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); background-attachment: fixed; min-height: 100vh; color: #333; }
-        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .login-box { background: white; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 400px; }
-        .login-box h2 { margin-bottom: 1.5rem; text-align: center; color: #667eea; }
-        .login-input { width: 100%; padding: 12px 15px; margin-bottom: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: all 0.3s; }
-        .login-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
-        .login-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
-        .login-btn:hover { transform: translateY(-2px); }
-        .navbar { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 1rem 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; display: none; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-        .nav-brand { font-size: 1.4rem; font-weight: bold; color: #667eea; }
-        .nav-menu { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-        .nav-btn { padding: 8px 16px; border: none; background: #f0f0f0; border-radius: 8px; cursor: pointer; transition: all 0.3s; font-size: 14px; }
-        .nav-btn:hover { background: #667eea; color: white; }
-        .nav-btn.active { background: #667eea; color: white; }
-        .nav-right { margin-left: auto; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-        .user-info { font-weight: 500; color: #667eea; }
-        .unified-section { min-height: 100vh; padding: 2rem 1.5rem; display: none; }
-        .unified-section.active { display: block; animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .stat { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
-        .stat:hover { transform: translateY(-5px); }
-        .stat small { font-size: 0.85rem; color: #6c757d; }
-        .stat div { font-size: 1.8rem; font-weight: bold; color: #667eea; margin-top: 0.5rem; }
-        .card-modern { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 1rem; }
-        .table { width: 100%; border-collapse: collapse; }
-        .table th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #e0e0e0; }
-        .table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
-        .btn-accent { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
-        .btn-accent:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .btn-danger { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        .btn-success { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
-        .btn-sm { padding: 4px 8px; font-size: 0.85rem; }
-        .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-        .form-select { padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-        .mt-3 { margin-top: 1rem; } .mb-3 { margin-bottom: 1rem; }
-        .d-flex { display: flex; } .d-none { display: none !important; }
-        .w-100 { width: 100%; } .w-auto { width: auto; }
-        .flex-wrap { flex-wrap: wrap; }
-        .align-items-center { align-items: center; }
-        .text-muted { color: #6c757d; }
-        .alert { padding: 12px; border-radius: 6px; margin-bottom: 1rem; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-danger  { background: #f8d7da; color: #721c24; border: 1px solid #dc3545; }
-        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
-        .alert-info    { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        .list-group { list-style: none; padding: 0; }
-        .list-group-item { padding: 12px; border: 1px solid #e0e0e0; border-bottom: none; background: white; }
-        .list-group-item:last-child  { border-bottom: 1px solid #e0e0e0; border-radius: 0 0 6px 6px; }
-        .list-group-item:first-child { border-radius: 6px 6px 0 0; }
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
-        .bg-danger  { background: #dc3545; color: white; }
-        .bg-warning { background: #ffc107; color: #000; }
-        .bg-success { background: #28a745; color: white; }
-        .expired       { background-color: #f8d7da !important; }
-        .expiring-soon { background-color: #fff3cd !important; }
-        .table-warning { background-color: #fff3cd; }
-        .role-admin { display: none; }
-
-        .notif-panel { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 1rem; border-left: 5px solid #667eea; }
-        .notif-panel h6 { color: #667eea; margin-bottom: 1rem; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
-        .notif-panel.green-border { border-left-color: #28a745; }
-        .notif-panel.green-border h6 { color: #28a745; }
-        .notif-panel.purple-border { border-left-color: #764ba2; }
-        .notif-panel.purple-border h6 { color: #764ba2; }
-        .notif-panel.orange-border { border-left-color: #fd7e14; }
-        .notif-panel.orange-border h6 { color: #fd7e14; }
-
-        .status-row  { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
-        .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
-        .status-pill.granted { background: #d4edda; color: #155724; }
-        .status-pill.denied  { background: #f8d7da; color: #721c24; }
-        .status-pill.default { background: #fff3cd; color: #856404; }
-
-        .btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
-
-        .pulse-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-        .pulse-dot.green  { background: #28a745; animation: blink 1.4s infinite; }
-        .pulse-dot.red    { background: #dc3545; }
-        .pulse-dot.yellow { background: #ffc107; animation: blink 1.4s infinite; }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-        .schedule-log { background: #f8f9fa; border-radius: 6px; padding: 10px; font-family: monospace; font-size: 0.78rem; max-height: 200px; overflow-y: auto; margin-top: 10px; }
-        .log-line { padding: 2px 0; border-bottom: 1px solid #eee; }
-        .log-line:last-child { border: none; }
-        .log-ok   { color: #155724; }
-        .log-warn { color: #856404; }
-        .log-err  { color: #dc3545; }
-
-        .interval-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 0.75rem; }
-
-        .bg-feature { background: #f0f4ff; border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; font-size: 0.85rem; }
-        .bg-feature strong { color: #667eea; }
-
-        @media (max-width: 768px) {
-            .unified-section { padding: 1rem 0.75rem; }
-            .nav-menu { flex-direction: column; width: 100%; margin-top: 1rem; }
-            .nav-btn  { width: 100%; }
-            .nav-right { margin-left: 0; margin-top: 1rem; width: 100%; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baxnaano Lab Management</title>
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);background-attachment:fixed;min-height:100vh;color:#333}
+.login-container{display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+.login-box{background:white;padding:2.5rem;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.2);width:100%;max-width:400px;text-align:center}
+.login-box h2{margin-bottom:1.5rem;color:#667eea}
+.login-input{width:100%;padding:12px 15px;margin-bottom:1rem;border:2px solid #e0e0e0;border-radius:8px;font-size:16px;transition:all .3s}
+.login-input:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
+.login-btn{width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;transition:transform .2s}
+.login-btn:hover{transform:translateY(-2px)}
+.navbar{background:rgba(255,255,255,.95);backdrop-filter:blur(10px);padding:1rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.1);position:sticky;top:0;z-index:1000;display:none;flex-wrap:wrap;gap:.5rem;align-items:center}
+.nav-brand{font-size:1.4rem;font-weight:bold;color:#667eea}
+.nav-menu{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.nav-btn{padding:8px 16px;border:none;background:#f0f0f0;border-radius:8px;cursor:pointer;transition:all .3s;font-size:14px}
+.nav-btn:hover,.nav-btn.active{background:#667eea;color:white}
+.nav-right{margin-left:auto;display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.user-info{font-weight:500;color:#667eea}
+.section{min-height:100vh;padding:2rem 1.5rem;display:none}
+.section.active{display:block;animation:fadeIn .3s ease-in}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.card{background:white;padding:1.5rem;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,.1);margin-bottom:1rem}
+.stat-box{background:white;padding:1.5rem;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,.1);transition:transform .2s;margin-bottom:1rem}
+.stat-box:hover{transform:translateY(-5px)}
+.stat-box small{font-size:.85rem;color:#6c757d}
+.stat-box .val{font-size:1.8rem;font-weight:bold;color:#667eea;margin-top:.5rem}
+table{width:100%;border-collapse:collapse}
+th{background:#f8f9fa;padding:12px;text-align:left;border-bottom:2px solid #e0e0e0}
+td{padding:10px 12px;border-bottom:1px solid #f0f0f0}
+.btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:500;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#667eea,#764ba2);color:white}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,0,0,.2)}
+.btn-success{background:#28a745;color:white}
+.btn-danger{background:#dc3545;color:white}
+.btn-sm{padding:4px 8px;font-size:.85rem}
+input.ctrl,select.ctrl{padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;width:100%}
+select.ctrl{width:auto}
+.mt{margin-top:1rem}.mb{margin-bottom:1rem}
+.d-none{display:none!important}
+.flex{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.alert{padding:12px;border-radius:6px;margin-bottom:.75rem}
+.alert-danger{background:#f8d7da;color:#721c24;border:1px solid #dc3545}
+.alert-warning{background:#fff3cd;color:#856404;border:1px solid #ffc107}
+.alert-success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.alert-info{background:#d1ecf1;color:#0c5460;border:1px solid #bee5eb}
+.badge{padding:4px 8px;border-radius:12px;font-size:.75rem;font-weight:bold}
+.badge-danger{background:#dc3545;color:white}
+.badge-warning{background:#ffc107;color:#000}
+.badge-success{background:#28a745;color:white}
+.expired{background:#f8d7da!important}
+.expiring-soon{background:#fff3cd!important}
+.role-admin{display:none}
+.npanel{background:white;border-radius:12px;padding:1.5rem;box-shadow:0 4px 15px rgba(0,0,0,.08);margin-bottom:1rem;border-left:5px solid #667eea}
+.npanel.green{border-left-color:#28a745}
+.npanel.purple{border-left-color:#764ba2}
+.npanel.orange{border-left-color:#fd7e14}
+.npanel h6{margin-bottom:1rem;font-size:1rem;display:flex;align-items:center;gap:8px;color:#667eea}
+.npanel.green h6{color:#28a745}
+.npanel.purple h6{color:#764ba2}
+.npanel.orange h6{color:#fd7e14}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:.8rem;font-weight:700}
+.pill.ok{background:#d4edda;color:#155724}
+.pill.err{background:#f8d7da;color:#721c24}
+.pill.warn{background:#fff3cd;color:#856404}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot.green{background:#28a745;animation:blink 1.4s infinite}
+.dot.red{background:#dc3545}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.log{background:#f8f9fa;border-radius:6px;padding:10px;font-family:monospace;font-size:.78rem;max-height:200px;overflow-y:auto;margin-top:10px}
+.log-line{padding:2px 0;border-bottom:1px solid #eee}
+.log-ok{color:#155724}.log-warn{color:#856404}.log-err{color:#dc3545}
+@media(max-width:768px){.section{padding:1rem .75rem}.nav-menu{flex-direction:column;width:100%;margin-top:1rem}.nav-btn{width:100%}.nav-right{margin-left:0;margin-top:1rem;width:100%}}
+</style>
 </head>
 <body>
 
 <!-- LOGIN -->
-<div id="loginContainer" class="login-container">
-    <div class="login-box">
-        <img src="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png" style="width:90%;height:auto;">
-        <h2>🔐 BAXNAANO LAB LOGIN</h2>
-        <input type="text"     id="loginUsername" class="login-input" placeholder="Username"  maxlength="50" autocomplete="username">
-        <input type="password" id="loginPassword" class="login-input" placeholder="Password" autocomplete="current-password">
-        <button id="loginBtn" class="login-btn">Login</button>
-        <div id="loginAlert" class="alert alert-danger d-none mt-3"></div>
-    </div>
+<div id="loginWrap" class="login-container">
+  <div class="login-box">
+    <img src="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png" style="width:80%;height:auto;margin-bottom:1rem">
+    <h2>🔐 BAXNAANO LAB</h2>
+    <input id="uname" class="login-input" placeholder="Username" maxlength="50" autocomplete="username">
+    <input id="upass" class="login-input" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="loginBtn" class="login-btn">Login</button>
+  </div>
 </div>
 
 <!-- NAVBAR -->
 <div id="navbar" class="navbar">
-    <img src="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png" style="width:32px;height:32px;object-fit:contain;">
-    <div class="nav-brand">🧪 Lab Management</div>
-    <div class="nav-menu" id="navMenu"></div>
-    <div class="nav-right">
-        <span class="user-info" id="userDisplay"></span>
-        <button class="btn-accent" id="logoutBtn">Logout</button>
-    </div>
+  <img src="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png" style="width:32px;height:32px;object-fit:contain">
+  <div class="nav-brand">🧪 Lab Management</div>
+  <div id="navMenu" class="nav-menu"></div>
+  <div class="nav-right">
+    <span id="userLabel" class="user-info"></span>
+    <button id="logoutBtn" class="btn btn-primary">Logout</button>
+  </div>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dashboardView" class="unified-section">
-    <h6 class="mb-3"><i class="bi bi-speedometer2"></i> Lab Dashboard</h6>
-    <div id="expiredMedicineAlert" class="alert alert-danger d-none">
-        <strong>⚠️ EXPIRED ITEMS FOUND!</strong> Some lab items have expired.
-    </div>
-    <div class="card-modern mt-3">
-        <h6>⚠️ Stock &amp; Expiry Alerts</h6>
-        <div id="stockExpiryAlerts"></div>
-    </div>
+<div id="dashView" class="section">
+  <h6 class="mb"><i class="bi bi-speedometer2"></i> Dashboard</h6>
+  <div id="dashAlerts"></div>
 </div>
 
 <!-- PRODUCTS -->
-<div id="productsView" class="unified-section">
-    <h6 class="mb-3 role-admin"><i class="bi bi-pills"></i> Manage Products</h6>
-    <form id="productForm" class="row g-2 mb-3 role-admin">
-        <input type="hidden" id="editProductId">
-        <div class="col-md-3"><input id="pName"   class="form-control" placeholder="Test Name" required maxlength="100"></div>
-        <div class="col-md-1"><input id="pQty"    class="form-control" type="number" min="0" placeholder="Qty" required></div>
-        <div class="col-md-2"><input id="pExpiry" class="form-control" type="date" required></div>
-        <div class="col-md-1"><button class="btn-accent w-100" type="submit">Save</button></div>
-    </form>
-    <input id="filterProd" class="form-control mb-3" placeholder="🔍 Filter products...">
-    <div style="max-height:360px;overflow:auto">
-        <table class="table table-sm">
-            <thead><tr>
-                <th>Name</th><th>Qty</th><th>Expiry</th><th>Status</th>
-                <th class="role-admin">Action</th>
-            </tr></thead>
-            <tbody id="productsTable"></tbody>
-        </table>
-    </div>
+<div id="prodView" class="section">
+  <h6 class="mb role-admin"><i class="bi bi-pills"></i> Manage Products</h6>
+  <form id="prodForm" class="flex mb role-admin" style="gap:.5rem">
+    <input type="hidden" id="editId">
+    <input id="pName" class="ctrl" style="flex:2;min-width:140px" placeholder="Test Name" required maxlength="100">
+    <input id="pQty"  class="ctrl" style="flex:0 0 80px" type="number" min="0" placeholder="Qty" required>
+    <input id="pExp"  class="ctrl" style="flex:0 0 140px" type="date" required>
+    <button class="btn btn-primary" type="submit">Save</button>
+  </form>
+  <input id="filterProd" class="ctrl mb" placeholder="🔍 Filter...">
+  <div style="max-height:380px;overflow:auto">
+    <table>
+      <thead><tr><th>Name</th><th>Qty</th><th>Expiry</th><th>Status</th><th class="role-admin">Action</th></tr></thead>
+      <tbody id="prodTbl"></tbody>
+    </table>
+  </div>
 </div>
 
 <!-- REPORTS -->
-<div id="reportsView" class="unified-section">
-    <h6 class="mb-3"><i class="bi bi-calendar-check"></i> Lab Expiry Report</h6>
-    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-        <div style="flex:1;min-width:280px;">
-            <div class="d-flex align-items-center flex-wrap mb-3" style="gap:0.5rem;">
-                <label>📅 Horizon:</label>
-                <select id="reportRange" class="form-select w-auto">
-                    <option value="next30">Next 30 days</option>
-                    <option value="next60">Next 60 days</option>
-                    <option value="next90">Next 90 days</option>
-                    <option value="all">All items</option>
-                    <option value="custom">Custom</option>
-                </select>
-                <input type="date" id="rFrom" style="display:none">
-                <input type="date" id="rTo"   style="display:none">
-                <button class="btn-accent" id="printExpiryReportBtn">🖨️ Print</button>
-            </div>
-            <div class="stat mb-3"><small class="text-muted">Expiring Items</small><div id="repTotal">0</div></div>
-            <div class="stat mb-3"><small class="text-muted">Expired Items</small> <div id="repExpired">0</div></div>
-            <h6>⚠️ Expiry Alerts</h6>
-            <div id="repItems" style="max-height:260px;overflow:auto"></div>
-        </div>
-        <div style="flex:1;min-width:280px;">
-            <h6>📋 Expiring Inventory</h6>
-            <div style="max-height:360px;overflow:auto">
-                <table class="table table-sm">
-                    <thead><tr><th>Name</th><th>Qty</th><th>Expiry</th><th>Status</th></tr></thead>
-                    <tbody id="recentSalesTbl"></tbody>
-                </table>
-            </div>
-        </div>
+<div id="repView" class="section">
+  <h6 class="mb"><i class="bi bi-calendar-check"></i> Expiry Report</h6>
+  <div class="flex mb">
+    <label>📅</label>
+    <select id="repRange" class="ctrl">
+      <option value="next30">Next 30 days</option>
+      <option value="next60">Next 60 days</option>
+      <option value="next90">Next 90 days</option>
+      <option value="all">All</option>
+      <option value="custom">Custom</option>
+    </select>
+    <input type="date" id="rFrom" style="display:none">
+    <input type="date" id="rTo"   style="display:none">
+    <button id="printBtn" class="btn btn-primary">🖨️ Print</button>
+  </div>
+  <div style="display:flex;gap:1rem;flex-wrap:wrap">
+    <div style="flex:1;min-width:260px">
+      <div class="stat-box"><small>Expiring</small><div class="val" id="repExp">0</div></div>
+      <div class="stat-box"><small>Expired</small> <div class="val" id="repExpd">0</div></div>
+      <div id="repList" style="max-height:280px;overflow:auto"></div>
     </div>
+    <div style="flex:1;min-width:260px">
+      <h6 class="mb">Expiring Inventory</h6>
+      <div style="max-height:360px;overflow:auto">
+        <table><thead><tr><th>Name</th><th>Qty</th><th>Expiry</th><th>Status</th></tr></thead>
+        <tbody id="repTbl"></tbody></table>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- NOTIFICATIONS SETTINGS -->
-<div id="notificationsView" class="unified-section">
-    <h6 class="mb-3"><i class="bi bi-bell-fill"></i> Background Notifications</h6>
+<!-- NOTIFICATIONS -->
+<div id="notifView" class="section">
+  <h6 class="mb"><i class="bi bi-bell-fill"></i> Background Alerts Setup</h6>
 
-    <!-- What's new -->
-    <div class="notif-panel orange-border mb-3">
-        <h6>🆕 How background alerts work now</h6>
-        <div class="bg-feature"><strong>✅ Tab closed, different website</strong> — Service Worker keeps running and will alert you</div>
-        <div class="bg-feature"><strong>✅ Screen locked / PC minimized</strong> — Browser background thread still fires alerts</div>
-        <div class="bg-feature"><strong>✅ No login required</strong> — Alerts fire even when you are not logged in, as long as the browser is open</div>
-        <div class="bg-feature"><strong>⚠️ Browser fully closed</strong> — Cannot send alerts until you reopen the browser. This is a browser security limit.</div>
-        <p style="font-size:0.82rem;color:#6c757d;margin-top:8px;">
-            <em>Tip: On Android Chrome, enable "Background Sync" in Chrome settings for best results. On iOS Safari, add the page to Home Screen first.</em>
-        </p>
+  <div class="npanel orange">
+    <h6>ℹ️ Sida u shaqeyso</h6>
+    <div class="alert alert-success">✅ <strong>Tab xidhan / waa baxday</strong> — alerts wali socdaan, browser uun u baahan</div>
+    <div class="alert alert-success">✅ <strong>Aadan login ahayn</strong> — Service Worker si madaxbanaan u shaqeynayaa</div>
+    <div class="alert alert-success">✅ <strong>30 daqiiqo kasta (ama waxaad doorato)</strong> — si toos ah u hubinayaa</div>
+    <div class="alert alert-warning">⚠️ <strong>Browser buuxa la xidho</strong> — waxba kuma socdo. Browser uun u fur, tab xidid kartaa.</div>
+  </div>
+
+  <div class="npanel">
+    <h6>🔔 Tallaabo 1 — Ogolow Notifications</h6>
+    <div class="flex mb" style="margin-bottom:.5rem">
+      <span id="permPill" class="pill warn">⏳ Hubinaya…</span>
+      <span id="permText" style="font-size:.85rem;color:#555"></span>
     </div>
-
-    <!-- 1. PERMISSION -->
-    <div class="notif-panel">
-        <h6>🔔 Step 1 — Allow Notifications</h6>
-        <div class="status-row">
-            <span id="permStatusPill" class="status-pill default">⏳ Checking…</span>
-            <span id="permStatusText" style="font-size:0.85rem;color:#555;"></span>
-        </div>
-        <div class="btn-row">
-            <button class="btn-accent"  id="requestPermBtn"  onclick="requestPermission()">🔔 Enable Notifications</button>
-            <button class="btn-success"                       onclick="sendTestNotification()">📤 Test Notification</button>
-            <button class="btn-accent"                        onclick="sendExpiryNotificationNow()">🚨 Check &amp; Alert Now</button>
-        </div>
+    <div class="flex">
+      <button id="reqPermBtn" class="btn btn-primary" onclick="requestPerm()">🔔 Ogolow</button>
+      <button class="btn btn-success" onclick="testNotif()">📤 Test</button>
+      <button class="btn btn-primary" onclick="checkNow()">🚨 Hubi Hadda</button>
     </div>
+  </div>
 
-    <!-- 2. SERVICE WORKER -->
-    <div class="notif-panel purple-border">
-        <h6>⚙️ Step 2 — Install Background Worker</h6>
-        <p style="font-size:0.85rem;color:#555;margin-bottom:0.75rem;">
-            This installs a <strong>Service Worker</strong> — a background process that keeps checking for expiry alerts
-            even when you close this tab or navigate away. It uses the check interval you set below.
-        </p>
-        <div class="status-row">
-            <span id="swStatusPill" class="status-pill default">⏳ Checking…</span>
-            <span id="swStatusText" style="font-size:0.82rem;color:#555;"></span>
-        </div>
-        <div class="btn-row">
-            <button class="btn-accent" onclick="registerServiceWorker()">⚙️ Install Background Worker</button>
-            <button class="btn-danger"  onclick="unregisterServiceWorker()">🗑 Remove</button>
-        </div>
+  <div class="npanel purple">
+    <h6>⚙️ Tallaabo 2 — Rakib Background Worker</h6>
+    <p style="font-size:.85rem;color:#555;margin-bottom:.75rem">
+      Service Worker wuxuu <strong>IndexedDB</strong> ka akhriyaa xogta si toos ah — 
+      <strong>ma u baahna tab furan ama login</strong>. Hal mar oo rakibto waa ku filan.
+    </p>
+    <div class="flex mb" style="margin-bottom:.5rem">
+      <span id="swPill" class="pill warn">⏳ Hubinaya…</span>
+      <span id="swText" style="font-size:.82rem;color:#555"></span>
     </div>
-
-    <!-- 3. AUTO SCHEDULE -->
-    <div class="notif-panel green-border">
-        <h6>
-            <span class="pulse-dot red" id="scheduleDot"></span>
-            &nbsp;Step 3 — Set Alert Interval
-        </h6>
-        <p style="font-size:0.85rem;color:#555;margin-bottom:0.75rem;">
-            Choose how often the background worker checks for expired or expiring items.
-            The interval is saved and used automatically — even without opening this page.
-        </p>
-
-        <div class="interval-row">
-            <label style="font-weight:600;font-size:0.9rem;">Check every:</label>
-            <select id="intervalSelect" class="form-select w-auto" onchange="saveInterval()">
-                <option value="15">15 minutes</option>
-                <option value="30" selected>30 minutes</option>
-                <option value="60">1 hour</option>
-                <option value="120">2 hours</option>
-                <option value="360">6 hours</option>
-                <option value="720">12 hours</option>
-            </select>
-            <span id="nextCheckLabel" style="font-size:0.82rem;color:#667eea;font-weight:600;"></span>
-        </div>
-
-        <div class="btn-row">
-            <button class="btn-success" id="startScheduleBtn" onclick="startSchedule()">▶ Start Auto-Check</button>
-            <button class="btn-danger"  id="stopScheduleBtn"  onclick="stopSchedule()" style="display:none">⏹ Stop</button>
-        </div>
-
-        <div class="schedule-log" id="scheduleLog">
-            <div class="log-line text-muted">— No checks run yet —</div>
-        </div>
+    <div class="flex">
+      <button class="btn btn-primary" onclick="installSW()">⚙️ Rakib Worker</button>
+      <button class="btn btn-danger"  onclick="removeSW()">🗑 Tirtir</button>
     </div>
+  </div>
+
+  <div class="npanel green">
+    <h6><span class="dot red" id="schedDot"></span>&nbsp; Tallaabo 3 — Waqtiga Hubinta</h6>
+    <div class="flex mt" style="margin-bottom:.75rem">
+      <label style="font-weight:600">Hubi:</label>
+      <select id="intSel" class="ctrl" onchange="saveInterval()">
+        <option value="15">15 daqiiqo</option>
+        <option value="30" selected>30 daqiiqo</option>
+        <option value="60">1 saac</option>
+        <option value="120">2 saac</option>
+        <option value="360">6 saac</option>
+      </select>
+      <span id="nextLbl" style="font-size:.82rem;color:#667eea;font-weight:600"></span>
+    </div>
+    <div class="flex">
+      <button id="startBtn" class="btn btn-success" onclick="startSchedule()">▶ Bilow Auto-Check</button>
+      <button id="stopBtn"  class="btn btn-danger"  onclick="stopSchedule()" style="display:none">⏹ Jooji</button>
+    </div>
+    <div id="logBox" class="log"><div class="log-line" style="color:#6c757d">— Wali waxba lama hubin —</div></div>
+  </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     SERVICE WORKER SOURCE — embedded as blob
-     ══════════════════════════════════════════════════ -->
-<script id="swSource" type="text/sw-source">
-const DB_KEY = 'pharma_products_final_v1';
-const INTERVAL_KEY = 'lab_notif_interval';
-const ICON = 'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png';
+<!-- SERVICE WORKER SOURCE (IndexedDB-based, no tab needed) -->
+<script id="swSrc" type="text/sw-source">
+const IDB_NAME   = 'BaxnaanoLabDB';
+const IDB_VER    = 1;
+const STORE_PROD = 'products';
+const ICON       = 'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png';
 
-self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(clients.claim()));
-
-/* ── Background timer using recursive setTimeout via alarms ──
-   We store the next check time in IndexedDB (accessible from SW).
-   On 'message' we accept SET_INTERVAL and TRIGGER_CHECK commands.
-   We also hook into 'periodicsync' if available.
-*/
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VER);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_PROD))
+        db.createObjectStore(STORE_PROD, { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('config'))
+        db.createObjectStore('config');
+    };
+    req.onsuccess = e => res(e.target.result);
+    req.onerror   = e => rej(e.target.error);
+  });
+}
+function dbGetAll(db, store) {
+  return new Promise((res, rej) => {
+    const req = db.transaction(store,'readonly').objectStore(store).getAll();
+    req.onsuccess = e => res(e.target.result || []);
+    req.onerror   = e => rej(e.target.error);
+  });
+}
+function isExpired(d)  { const t=new Date();t.setHours(0,0,0,0);return new Date(d)<t; }
+function isExpiring(d) { const t=new Date();t.setHours(0,0,0,0);const s=new Date(t.getTime()+30*864e5);const e=new Date(d);return e>=t&&e<=s; }
 
 let timerHandle = null;
 
-function isExpired(dateStr) {
-    const t = new Date(); t.setHours(0,0,0,0);
-    return new Date(dateStr) < t;
-}
-function isExpiring(dateStr) {
-    const t = new Date(); t.setHours(0,0,0,0);
-    const s = new Date(t.getTime() + 30 * 864e5);
-    const e = new Date(dateStr);
-    return e >= t && e <= s;
-}
+async function runCheck() {
+  try {
+    const db       = await openDB();
+    const products = await dbGetAll(db, STORE_PROD);
+    db.close();
 
-async function readProducts() {
-    /* Read from all active clients' localStorage via postMessage */
-    const allClients = await clients.matchAll({ includeUncontrolled: true, type: 'window' });
-    if (allClients.length === 0) return null;
-    return new Promise(resolve => {
-        const ch = new MessageChannel();
-        ch.port1.onmessage = ev => resolve(ev.data);
-        allClients[0].postMessage({ type: 'GET_PRODUCTS' }, [ch.port2]);
-        setTimeout(() => resolve(null), 3000);
-    });
-}
+    const expired  = products.filter(p=>isExpired(p.expiry) ).map(p=>({name:p.name,expiry:new Date(p.expiry).toLocaleDateString()}));
+    const expiring = products.filter(p=>isExpiring(p.expiry)).map(p=>({name:p.name,expiry:new Date(p.expiry).toLocaleDateString()}));
 
-async function runExpiryCheck() {
-    const products = await readProducts();
-    if (!products || products.length === 0) return;
+    const allClients = await clients.matchAll({includeUncontrolled:true,type:'window'});
+    allClients.forEach(c => c.postMessage({type:'CHECK_RESULT',expired,expiring,ts:Date.now()}));
 
-    const expired  = products.filter(p => isExpired(p.expiry)).map(p => ({ name: p.name, expiry: new Date(p.expiry).toLocaleDateString() }));
-    const expiring = products.filter(p => isExpiring(p.expiry)).map(p => ({ name: p.name, expiry: new Date(p.expiry).toLocaleDateString() }));
-
-    if (expired.length === 0 && expiring.length === 0) return;
+    if (expired.length===0 && expiring.length===0) return;
 
     const title = expired.length > 0
-        ? `❌ ${expired.length} item(s) EXPIRED — Baxnaano Lab`
-        : `⚠️ ${expiring.length} item(s) expiring soon — Baxnaano Lab`;
+      ? '❌ ' + expired.length + ' ITEM(S) EXPIRED — Baxnaano Lab'
+      : '⚠️ ' + expiring.length + ' item(s) expiring soon — Baxnaano Lab';
 
     const lines = [
-        ...expired.map(p  => `❌ ${p.name} — expired ${p.expiry}`),
-        ...expiring.map(p => `⚠️ ${p.name} — expires ${p.expiry}`)
+      ...expired.map(p  => '❌ ' + p.name + ' — expired '  + p.expiry),
+      ...expiring.map(p => '⚠️ ' + p.name + ' — expires ' + p.expiry)
     ];
-    const body = lines.slice(0, 5).join('\n') + (lines.length > 5 ? `\n…and ${lines.length - 5} more` : '');
+    const body = lines.slice(0,6).join('\n') + (lines.length>6 ? '\n…and ' + (lines.length-6) + ' more' : '');
 
-    self.registration.showNotification(title, {
-        body, icon: ICON, badge: ICON,
-        tag: 'lab-expiry', renotify: true, requireInteraction: true
+    await self.registration.showNotification(title, {
+      body, icon:ICON, badge:ICON, tag:'lab-expiry', renotify:true, requireInteraction:true
     });
-
-    /* Notify all open tabs so they can update their logs */
-    const allClients = await clients.matchAll({ includeUncontrolled: true, type: 'window' });
-    allClients.forEach(c => c.postMessage({ type: 'CHECK_RESULT', expired, expiring }));
+  } catch(err) {
+    console.error('[SW] runCheck:', err);
+  }
 }
 
-function scheduleNextCheck(intervalMs) {
-    clearTimeout(timerHandle);
-    timerHandle = setTimeout(async () => {
-        await runExpiryCheck();
-        scheduleNextCheck(intervalMs);
-    }, intervalMs);
+function scheduleNext(ms) {
+  clearTimeout(timerHandle);
+  timerHandle = setTimeout(async () => {
+    await runCheck();
+    scheduleNext(ms);
+  }, ms);
 }
+
+self.addEventListener('install',  () => self.skipWaiting());
+self.addEventListener('activate', e  => e.waitUntil(clients.claim()));
 
 self.addEventListener('message', async event => {
-    const { type, payload } = event.data || {};
-
-    if (type === 'START_SCHEDULE') {
-        const mins = payload.intervalMins || 30;
-        scheduleNextCheck(mins * 60000);
-        event.source.postMessage({ type: 'SCHEDULE_STARTED', intervalMins: mins });
-    }
-
-    if (type === 'STOP_SCHEDULE') {
-        clearTimeout(timerHandle);
-        timerHandle = null;
-    }
-
-    if (type === 'TRIGGER_CHECK') {
-        await runExpiryCheck();
-    }
-
-    if (type === 'CHECK_EXPIRY') {
-        /* Legacy: direct payload from main thread */
-        const { expired, expiring } = payload;
-        if (expired.length === 0 && expiring.length === 0) return;
-        const title = expired.length > 0
-            ? `❌ ${expired.length} EXPIRED — Baxnaano Lab`
-            : `⚠️ ${expiring.length} expiring soon — Baxnaano Lab`;
-        const lines = [...expired.map(p => `❌ ${p.name} — expired ${p.expiry}`), ...expiring.map(p => `⚠️ ${p.name} — expires ${p.expiry}`)];
-        const body = lines.slice(0, 5).join('\n') + (lines.length > 5 ? `\n…and ${lines.length - 5} more` : '');
-        self.registration.showNotification(title, { body, icon: ICON, badge: ICON, tag: 'lab-expiry', renotify: true, requireInteraction: true });
-    }
+  const { type, payload } = event.data || {};
+  if (type === 'START') {
+    const mins = (payload && payload.mins) || 30;
+    scheduleNext(mins * 60000);
+    await runCheck();
+  }
+  if (type === 'STOP')         { clearTimeout(timerHandle); timerHandle=null; }
+  if (type === 'SET_INTERVAL') { const mins=(payload&&payload.mins)||30; scheduleNext(mins*60000); }
+  if (type === 'CHECK_NOW')    { await runCheck(); }
 });
 
-/* Periodic Background Sync (Chrome Android) */
-self.addEventListener('periodicsync', async event => {
-    if (event.tag === 'lab-expiry-check') {
-        event.waitUntil(runExpiryCheck());
-    }
+self.addEventListener('periodicsync', event => {
+  if (event.tag === 'lab-expiry') event.waitUntil(runCheck());
 });
 
-/* Notification click — open/focus the app tab */
 self.addEventListener('notificationclick', event => {
-    event.notification.close();
-    event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-            if (list.length > 0) { list[0].focus(); return; }
-            clients.openWindow(self.registration.scope);
-        })
-    );
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({type:'window',includeUncontrolled:true}).then(list => {
+      if (list.length>0) return list[0].focus();
+      return clients.openWindow(self.registration.scope);
+    })
+  );
 });
 </script>
 
 <script>
 'use strict';
 
-const CONFIG = {
-    STORAGE_KEYS: {
-        USERS:    'pharma_users_final_v1',
-        PRODUCTS: 'pharma_products_final_v1',
-        SESSION:  'pharma_session_final_v1',
-        INTERVAL: 'lab_notif_interval'
-    },
-    ROLES: { ADMIN: 'admin', CASHIER: 'cashier' }
-};
+/* ── IndexedDB ── */
+const IDB_NAME   = 'BaxnaanoLabDB';
+const IDB_VER    = 1;
+const STORE_PROD = 'products';
+let _db = null;
 
-let currentUser    = null;
-let scheduleTimer  = null;
-let countdownTimer = null;
-let nextCheckTime  = null;
-let swReg          = null;
-
-// ── UTILS ─────────────────────────────────────────────────────────────────────
-function sanitize(text, max=500) {
-    if (typeof text !== 'string') return '';
-    return text.replace(/[<>"'&]/g, c =>
-        ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;','&':'&amp;'}[c])
-    ).substring(0,max).trim();
-}
-async function hashPw(pw) {
-    try {
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw+'pharma_salt_secure_2024'));
-        return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    } catch { return btoa(pw.split('').reverse().join('')); }
-}
-function load(key, def=[]) { try { const d=localStorage.getItem(key); return d?JSON.parse(d):def; } catch { return def; } }
-function save(key, data)   { try { localStorage.setItem(key,JSON.stringify(data)); return true; } catch(e) { console.error(e); return false; } }
-function isExpired(d)      { const t=new Date(); t.setHours(0,0,0,0); return new Date(d)<t; }
-function isExpiring(d)     { const t=new Date(); t.setHours(0,0,0,0); const s=new Date(t.getTime()+30*864e5); const e=new Date(d); return e>=t&&e<=s; }
-function gid(p)            { return `${p}_${Date.now()}_${Math.random().toString(36).substr(2,9)}`; }
-function debounce(fn,w)    { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),w); }; }
-
-function getAlerts() {
-    const products = load(CONFIG.STORAGE_KEYS.PRODUCTS);
-    return {
-        expired:  products.filter(p=>isExpired(p.expiry) ).map(p=>({name:p.name,expiry:new Date(p.expiry).toLocaleDateString()})),
-        expiring: products.filter(p=>isExpiring(p.expiry)).map(p=>({name:p.name,expiry:new Date(p.expiry).toLocaleDateString()}))
+async function getDB() {
+  if (_db) return _db;
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VER);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_PROD)) db.createObjectStore(STORE_PROD, {keyPath:'id'});
+      if (!db.objectStoreNames.contains('config'))   db.createObjectStore('config');
     };
+    req.onsuccess = e => { _db=e.target.result; res(_db); };
+    req.onerror   = e => rej(e.target.error);
+  });
+}
+async function idbGetAll(store) {
+  const db=await getDB();
+  return new Promise((res,rej)=>{
+    const req=db.transaction(store,'readonly').objectStore(store).getAll();
+    req.onsuccess=e=>res(e.target.result||[]);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function idbPut(store, value) {
+  const db=await getDB();
+  return new Promise((res,rej)=>{
+    const req=db.transaction(store,'readwrite').objectStore(store).put(value);
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function idbDelete(store, key) {
+  const db=await getDB();
+  return new Promise((res,rej)=>{
+    const req=db.transaction(store,'readwrite').objectStore(store).delete(key);
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e.target.error);
+  });
 }
 
-// ── AUTH ──────────────────────────────────────────────────────────────────────
-async function checkSession() {
-    const sess = localStorage.getItem(CONFIG.STORAGE_KEYS.SESSION);
-    if (sess) {
-        currentUser = load(CONFIG.STORAGE_KEYS.USERS).find(u=>u.username===sess)||null;
-        if (currentUser) { showApp(); return; }
+/* ── Constants ── */
+const ROLES    = {ADMIN:'admin',CASHIER:'cashier'};
+const USER_KEY = 'bax_users_v2';
+const SESS_KEY = 'bax_session_v2';
+const INT_KEY  = 'bax_interval';
+const ICON     = 'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png';
+
+let currentUser=null, swReg=null, tabTimer=null, cntTimer=null, nextCheck=null;
+
+/* ── Utils ── */
+function sanitize(t,max=500){if(typeof t!=='string')return '';return t.replace(/[<>"'&]/g,c=>({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;','&':'&amp;'}[c])).substring(0,max).trim();}
+async function hashPw(pw){try{const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw+'bax_salt_2024'));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}catch{return btoa(pw.split('').reverse().join(''));}}
+function ls(k,def=null){try{const d=localStorage.getItem(k);return d?JSON.parse(d):def;}catch{return def;}}
+function lsSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function isExpired(d){const t=new Date();t.setHours(0,0,0,0);return new Date(d)<t;}
+function isExpiring(d){const t=new Date();t.setHours(0,0,0,0);const s=new Date(t.getTime()+30*864e5);const e=new Date(d);return e>=t&&e<=s;}
+function uid(){return 'p_'+Date.now()+'_'+Math.random().toString(36).substr(2,8);}
+function debounce(fn,w){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),w);};}
+
+async function getAlerts(){
+  const products=await idbGetAll(STORE_PROD);
+  return{
+    expired: products.filter(p=>isExpired(p.expiry) ).map(p=>({name:p.name,expiry:new Date(p.expiry).toLocaleDateString()})),
+    expiring:products.filter(p=>isExpiring(p.expiry)).map(p=>({name:p.name,expiry:new Date(p.expiry).toLocaleDateString()}))
+  };
+}
+
+/* ── Migrate old localStorage data once ── */
+async function migrate(){
+  try{
+    const raw=localStorage.getItem('pharma_products_final_v1');
+    if(!raw) return;
+    const prods=JSON.parse(raw);
+    if(!Array.isArray(prods)||prods.length===0) return;
+    const ex=await idbGetAll(STORE_PROD);
+    if(ex.length>0) return;
+    for(const p of prods){if(!p.id)p.id=uid();await idbPut(STORE_PROD,p);}
+    addLog('📦 Xogdii hore la wareejiyay IndexedDB.','ok');
+  }catch(e){}
+}
+
+/* ── Auth ── */
+async function initUsers(){
+  const u=ls(USER_KEY,[]);
+  if(u.length===0) lsSave(USER_KEY,[{username:'admin',password:await hashPw('admin123'),role:ROLES.ADMIN}]);
+}
+async function checkSession(){
+  const sess=localStorage.getItem(SESS_KEY);
+  const users=ls(USER_KEY,[]);
+  if(sess) currentUser=users.find(u=>u.username===sess)||null;
+  if(currentUser) showApp(); else showLogin();
+}
+function showLogin(){document.getElementById('loginWrap').style.display='flex';document.getElementById('navbar').style.display='none';}
+function showApp(){
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('navbar').style.display='flex';
+  document.getElementById('userLabel').textContent='👤 '+currentUser.username+' ('+currentUser.role+')';
+  buildNav();applyRoles();
+  showView(currentUser.role===ROLES.ADMIN?'dash':'rep');
+  setTimeout(autoAlert,1500);
+}
+async function handleLogin(){
+  const u=document.getElementById('uname').value.trim();
+  const p=document.getElementById('upass').value;
+  if(!u||!p){Swal.fire({icon:'warning',title:'Gali xogta',timer:1500});return;}
+  const users=ls(USER_KEY,[]);
+  const user=users.find(x=>x.username===u);
+  if(!user||user.password!==await hashPw(p)){Swal.fire({icon:'error',title:'Xog qaldan',timer:1500});return;}
+  currentUser=user;localStorage.setItem(SESS_KEY,u);showApp();
+  Swal.fire({icon:'success',title:'Ku soo dhawoow!',timer:1200});
+}
+
+/* ── Nav ── */
+function buildNav(){
+  const menu=document.getElementById('navMenu');menu.innerHTML='';
+  const items=currentUser.role===ROLES.ADMIN
+    ?[{v:'dash',l:'📊 Dashboard'},{v:'prod',l:'🧪 Products'},{v:'rep',l:'📋 Reports'},{v:'notif',l:'🔔 Notifications'}]
+    :[{v:'rep',l:'📋 Reports'},{v:'notif',l:'🔔 Notifications'}];
+  items.forEach(it=>{const b=document.createElement('button');b.className='nav-btn';b.dataset.view=it.v;b.textContent=it.l;b.onclick=()=>showView(it.v);menu.appendChild(b);});
+}
+function applyRoles(){document.querySelectorAll('.role-admin').forEach(el=>{el.style.display=currentUser.role===ROLES.ADMIN?'':'none';});}
+function showView(name){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const sec=document.getElementById(name+'View');const btn=document.querySelector('[data-view="'+name+'"]');
+  if(sec)sec.classList.add('active');if(btn)btn.classList.add('active');
+  applyRoles();
+  if(name==='dash') renderDash();
+  if(name==='prod') renderProd();
+  if(name==='rep')  renderRep();
+  if(name==='notif')renderNotif();
+}
+
+/* ── Dashboard ── */
+async function renderDash(){
+  if(currentUser.role!==ROLES.ADMIN){showView('rep');return;}
+  const products=await idbGetAll(STORE_PROD);
+  const box=document.getElementById('dashAlerts');box.innerHTML='';
+  const frag=document.createDocumentFragment();let count=0;
+  products.filter(p=>isExpired(p.expiry)).forEach(p=>{const d=document.createElement('div');d.className='alert alert-danger';d.innerHTML='<strong>❌ EXPIRED:</strong> '+sanitize(p.name)+' ('+new Date(p.expiry).toLocaleDateString()+')';frag.appendChild(d);count++;});
+  products.filter(p=>isExpiring(p.expiry)).forEach(p=>{const d=document.createElement('div');d.className='alert alert-warning';d.innerHTML='<strong>⚠️ Expiring Soon:</strong> '+sanitize(p.name)+' ('+new Date(p.expiry).toLocaleDateString()+')';frag.appendChild(d);count++;});
+  if(count===0)box.innerHTML='<div class="alert alert-success">✅ Wax dhibaato ah ma jiraan.</div>';
+  else box.appendChild(frag);
+}
+
+/* ── Products ── */
+async function renderProd(){
+  if(currentUser.role!==ROLES.ADMIN){showView('rep');return;}
+  ['editId','pName','pQty','pExp','filterProd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  await renderProdTable();
+}
+async function renderProdTable(filter=''){
+  const products=await idbGetAll(STORE_PROD);
+  const list=filter?products.filter(p=>p.name.toLowerCase().includes(filter.toLowerCase())):products;
+  const tbody=document.getElementById('prodTbl');tbody.innerHTML='';
+  const frag=document.createDocumentFragment();
+  list.forEach(p=>{
+    const exp=isExpired(p.expiry),exp2=isExpiring(p.expiry);
+    const tr=document.createElement('tr');tr.className=exp?'expired':exp2?'expiring-soon':'';
+    tr.innerHTML='<td>'+sanitize(p.name)+' '+(exp?'❌':exp2?'⚠️':'')+'</td><td>'+p.qty+'</td><td>'+new Date(p.expiry).toLocaleDateString()+'</td><td><span class="badge '+(exp?'badge-danger':exp2?'badge-warning':'badge-success')+'">'+(exp?'Expired':exp2?'Expiring':'Good')+'</span></td><td class="role-admin"><button class="btn btn-primary btn-sm" onclick="editProd(\''+p.id+'\')">Edit</button> <button class="btn btn-danger btn-sm" onclick="delProd(\''+p.id+'\')">Del</button></td>';
+    frag.appendChild(tr);
+  });
+  tbody.appendChild(frag);applyRoles();
+}
+async function handleProdSubmit(e){
+  if(currentUser.role!==ROLES.ADMIN){Swal.fire({icon:'error',title:'Access denied'});return;}
+  e.preventDefault();
+  const id=document.getElementById('editId').value;
+  const obj={name:sanitize(document.getElementById('pName').value,100),qty:parseInt(document.getElementById('pQty').value),expiry:document.getElementById('pExp').value};
+  if(!obj.name||obj.qty<0||!obj.expiry){Swal.fire({icon:'warning',title:'Buuxi dhammaan goobaha'});return;}
+  obj.id=id||uid();
+  await idbPut(STORE_PROD,obj);
+  Swal.fire({icon:'success',title:'La keydsaday',timer:1200});renderProd();
+}
+async function editProd(id){
+  if(currentUser.role!==ROLES.ADMIN)return;
+  const products=await idbGetAll(STORE_PROD);
+  const p=products.find(x=>x.id===id);if(!p)return;
+  document.getElementById('editId').value=p.id;document.getElementById('pName').value=p.name;
+  document.getElementById('pQty').value=p.qty;document.getElementById('pExp').value=p.expiry;
+}
+async function delProd(id){
+  if(currentUser.role!==ROLES.ADMIN)return;
+  const r=await Swal.fire({title:'Delete?',icon:'warning',showCancelButton:true});
+  if(!r.isConfirmed)return;
+  await idbDelete(STORE_PROD,id);
+  Swal.fire({icon:'success',title:'La tirtiray',timer:1200});renderProd();
+}
+
+/* ── Reports ── */
+async function renderRep(){
+  const range=document.getElementById('repRange').value;
+  let from=null,to=null;
+  const today=new Date();today.setHours(0,0,0,0);
+  if(range==='next30'){from=today;to=new Date(today.getTime()+30*864e5);}
+  else if(range==='next60'){from=today;to=new Date(today.getTime()+60*864e5);}
+  else if(range==='next90'){from=today;to=new Date(today.getTime()+90*864e5);}
+  else if(range==='custom'){
+    const f=document.getElementById('rFrom').value,t=document.getElementById('rTo').value;
+    if(f){from=new Date(f);from.setHours(0,0,0,0);}if(t){to=new Date(t);to.setHours(23,59,59,999);}
+  }
+  const products=await idbGetAll(STORE_PROD);
+  const expiring=products.filter(p=>{if(isExpired(p.expiry))return false;const e=new Date(p.expiry);if(from&&e<from)return false;if(to&&e>to)return false;return true;});
+  const expired=products.filter(p=>isExpired(p.expiry));
+  document.getElementById('repExp').textContent=expiring.length;
+  document.getElementById('repExpd').textContent=expired.length;
+  const ri=document.getElementById('repList');ri.innerHTML='';
+  if(expired.length===0&&expiring.length===0){ri.innerHTML='<p style="color:#6c757d">Wax dhibaato ah ma jiraan.</p>';}
+  else{
+    const ul=document.createElement('ul');ul.style.listStyle='none';ul.style.padding='0';
+    expired.forEach(p=>{const li=document.createElement('li');li.className='alert alert-danger';li.innerHTML='<strong>❌ Expired:</strong> '+sanitize(p.name)+' — '+new Date(p.expiry).toLocaleDateString()+' (Qty:'+p.qty+')';ul.appendChild(li);});
+    expiring.forEach(p=>{const li=document.createElement('li');li.className='alert alert-warning';li.innerHTML='<strong>⚠️ Expiring:</strong> '+sanitize(p.name)+' — '+new Date(p.expiry).toLocaleDateString()+' (Qty:'+p.qty+')';ul.appendChild(li);});
+    ri.appendChild(ul);
+  }
+  const tbl=document.getElementById('repTbl');tbl.innerHTML='';
+  const frag=document.createDocumentFragment();
+  expiring.concat(expired).sort((a,b)=>new Date(a.expiry)-new Date(b.expiry)).forEach(p=>{
+    const tr=document.createElement('tr');tr.className=isExpired(p.expiry)?'expired':'expiring-soon';
+    tr.innerHTML='<td>'+sanitize(p.name)+'</td><td>'+p.qty+'</td><td>'+new Date(p.expiry).toLocaleDateString()+'</td><td>'+(isExpired(p.expiry)?'Expired':'Expiring')+'</td>';
+    frag.appendChild(tr);
+  });
+  tbl.appendChild(frag);
+}
+function printReport(){
+  const label=document.querySelector('#repRange option:checked').textContent;
+  const w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Expiry Report</title><style>body{font-family:Arial;padding:20px}.alert-danger{background:#f8d7da;padding:10px;border-radius:8px;margin-bottom:8px}.alert-warning{background:#fff3cd;padding:10px;border-radius:8px;margin-bottom:8px}@media print{button{display:none}}</style></head><body><h1>Baxnaano Lab — Expiry Report</h1><p><strong>Range:</strong> '+label+'</p><p><strong>Expiring:</strong> '+document.getElementById('repExp').textContent+' | <strong>Expired:</strong> '+document.getElementById('repExpd').textContent+'</p><h2>Alerts</h2>'+document.getElementById('repList').innerHTML+'<button onclick="window.print()">Print</button></body></html>');
+  w.document.close();
+}
+
+/* ── Notifications UI ── */
+function renderNotif(){
+  updatePermUI();updateSwUI();
+  const saved=localStorage.getItem(INT_KEY);
+  if(saved)document.getElementById('intSel').value=saved;
+}
+function updatePermUI(){
+  const pill=document.getElementById('permPill');const text=document.getElementById('permText');const btn=document.getElementById('reqPermBtn');if(!pill)return;
+  const perm=('Notification' in window)?Notification.permission:'unsupported';
+  if(perm==='granted'){pill.className='pill ok';pill.textContent='✅ La ogolaaday';text.textContent='Notifications shaqeynayaan.';btn.style.display='none';}
+  else if(perm==='denied'){pill.className='pill err';pill.textContent='❌ Xidnaa';text.textContent='Browser settings ku fur oo ogolow.';btn.style.display='';}
+  else if(perm==='unsupported'){pill.className='pill err';pill.textContent='🚫 Ma taageero';text.textContent='';btn.style.display='none';}
+  else{pill.className='pill warn';pill.textContent='⏳ La ogolaan waaa';text.textContent='Guji "Ogolow".';btn.style.display='';}
+}
+async function requestPerm(){
+  if(!('Notification' in window)){Swal.fire({icon:'error',title:'Browser-ku ma taageero'});return;}
+  const r=await Notification.requestPermission();updatePermUI();
+  if(r==='granted')Swal.fire({icon:'success',title:'✅ La ogolaaday!',timer:2000});
+  else Swal.fire({icon:'warning',title:'La diiday',text:'Browser settings ku fur oo ogolow notifications.'});
+}
+function updateSwUI(){
+  const pill=document.getElementById('swPill');const text=document.getElementById('swText');if(!pill)return;
+  if(!('serviceWorker' in navigator)){pill.className='pill err';pill.textContent='🚫 Ma taageero';text.textContent='';return;}
+  navigator.serviceWorker.getRegistration().then(reg=>{
+    if(reg){swReg=reg;pill.className='pill ok';pill.textContent='✅ Shaqeynaya';text.textContent='Background Worker waa socda — tab xidhan markay tahay wali shaqeynayaa.';}
+    else{pill.className='pill warn';pill.textContent='⏳ Ma rakibna';text.textContent='Guji "Rakib Worker".';}
+  });
+}
+function fireNotif(title,body,tag='lab'){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const opts={body,icon:ICON,badge:ICON,tag,renotify:true,requireInteraction:true};
+  if(swReg)swReg.showNotification(title,opts);else new Notification(title,opts);
+}
+function testNotif(){
+  if(Notification.permission!=='granted'){Swal.fire({icon:'warning',title:'Marka hore ogolow notifications',timer:1800});return;}
+  fireNotif('🧪 Baxnaano Lab — Test','Notifications si fiican ayay u shaqeynayaan!','lab-test');
+  addLog('✅ Test notification la diray.','ok');
+}
+async function checkNow(){
+  if(swReg&&navigator.serviceWorker.controller){
+    navigator.serviceWorker.controller.postMessage({type:'CHECK_NOW'});
+    addLog('['+new Date().toLocaleTimeString()+'] 🔄 SW la codsaday hubinta.','ok');return;
+  }
+  const {expired,expiring}=await getAlerts();const time=new Date().toLocaleTimeString();
+  if(expired.length===0&&expiring.length===0){addLog('['+time+'] ✅ Wax dhibaato ah ma jiraan.','ok');Swal.fire({icon:'success',title:'✅ Wax dhibaato ah ma jiraan',timer:2000});return;}
+  if(Notification.permission!=='granted'){Swal.fire({icon:'warning',title:'Notifications la ogolaan'});return;}
+  const lines=[...expired.map(p=>'❌ '+p.name+' — '+p.expiry),...expiring.map(p=>'⚠️ '+p.name+' — '+p.expiry)];
+  const title=expired.length>0?'❌ '+expired.length+' EXPIRED — Baxnaano Lab':'⚠️ '+expiring.length+' expiring — Baxnaano Lab';
+  fireNotif(title,lines.slice(0,6).join('\n')+(lines.length>6?'\n…+' +(lines.length-6)+' more':''),'lab-expiry');
+  addLog('['+time+'] 🚨 '+expired.length+' expired, '+expiring.length+' expiring.',expired.length>0?'err':'warn');
+}
+async function autoAlert(){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='granted'){const a=await getAlerts();if(a.expired.length>0||a.expiring.length>0)checkNow();return;}
+  if(Notification.permission==='default'){
+    const{isConfirmed}=await Swal.fire({icon:'info',title:'🔔 Background Alerts?',text:'Si toos ah wuu kuu ogeysiinayaa marka lab items dhammaanayaan — xitaa tab-ka xidhan yahay.',showCancelButton:true,confirmButtonText:'Ogolow',cancelButtonText:'Dib'});
+    if(isConfirmed)await requestPerm();
+  }
+}
+
+/* ── Service Worker install ── */
+async function installSW(){
+  if(!('serviceWorker' in navigator)){Swal.fire({icon:'error',title:'Ma taageero',text:'HTTPS ama localhost u baahan.'});return;}
+  try{
+    const code=document.getElementById('swSrc').textContent;
+    const blob=new Blob([code],{type:'application/javascript'});
+    const url=URL.createObjectURL(blob);
+    swReg=await navigator.serviceWorker.register(url,{scope:'/'});
+    await navigator.serviceWorker.ready;
+    updateSwUI();
+    const mins=parseInt(localStorage.getItem(INT_KEY)||'30');
+    setTimeout(()=>{
+      const ctrl=navigator.serviceWorker.controller;
+      if(ctrl)ctrl.postMessage({type:'START',payload:{mins}});
+      addLog('⚙️ Worker la rakibay — timer '+mins+' daqiiqo.','ok');
+    },800);
+    try{
+      const ps=await navigator.permissions.query({name:'periodic-background-sync'});
+      if(ps.state==='granted'){await swReg.periodicSync.register('lab-expiry',{minInterval:mins*60000});addLog('📡 Periodic Sync la diwaangeliyay.','ok');}
+    }catch(e){}
+    Swal.fire({icon:'success',title:'✅ Worker La Rakibay!',text:'Hadda tab-ka xid — alerts wali ayuu soo diri doonaa '+mins+' daqiiqo kasta.',timer:4000});
+  }catch(err){
+    addLog('❌ SW error: '+err.message,'err');
+    Swal.fire({icon:'error',title:'Khalad',text:err.message});
+  }
+}
+async function removeSW(){
+  if(!swReg)swReg=await navigator.serviceWorker.getRegistration().catch(()=>null);
+  if(!swReg){Swal.fire({icon:'info',title:'Worker ma jiro',timer:1500});return;}
+  if(navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'STOP'});
+  await swReg.unregister();swReg=null;updateSwUI();
+  addLog('🗑 Worker la tirtiray.','warn');Swal.fire({icon:'success',title:'La tirtiray',timer:1500});
+}
+
+/* ── In-tab schedule (backup) ── */
+function saveInterval(){
+  const mins=parseInt(document.getElementById('intSel').value);
+  localStorage.setItem(INT_KEY,mins);
+  if(swReg&&navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'SET_INTERVAL',payload:{mins}});
+  if(tabTimer)startSchedule();
+  addLog('⚙️ Interval '+mins+' daqiiqo loogu dejiyay.','ok');
+}
+async function startSchedule(){
+  clearInterval(tabTimer);
+  const mins=parseInt(document.getElementById('intSel').value);
+  localStorage.setItem(INT_KEY,mins);
+  tabTimer=setInterval(tabCheck,mins*60000);
+  nextCheck=new Date(Date.now()+mins*60000);
+  document.getElementById('schedDot').className='dot green';
+  document.getElementById('startBtn').style.display='none';
+  document.getElementById('stopBtn').style.display='';
+  addLog('▶ Tab timer: '+mins+' daqiiqo kasta.','ok');
+  if(swReg&&navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'START',payload:{mins}});
+  await tabCheck();startCountdown();
+}
+function stopSchedule(){
+  clearInterval(tabTimer);tabTimer=null;nextCheck=null;clearInterval(cntTimer);cntTimer=null;
+  document.getElementById('schedDot').className='dot red';document.getElementById('nextLbl').textContent='Joojiyay';
+  document.getElementById('startBtn').style.display='';document.getElementById('stopBtn').style.display='none';
+  if(swReg&&navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({type:'STOP'});
+  addLog('⏹ Tab timer joojiyay. SW wali shaqeynayaa.','warn');
+}
+function startCountdown(){
+  clearInterval(cntTimer);
+  cntTimer=setInterval(()=>{
+    if(!nextCheck)return;const diff=Math.max(0,Math.round((nextCheck-Date.now())/1000));
+    const el=document.getElementById('nextLbl');if(el)el.textContent='Xiga: '+Math.floor(diff/60)+'m '+diff%60+'s';
+  },1000);
+}
+async function tabCheck(){
+  const mins=parseInt(document.getElementById('intSel')?.value||30);nextCheck=new Date(Date.now()+mins*60000);
+  const{expired,expiring}=await getAlerts();const time=new Date().toLocaleTimeString();
+  if(expired.length===0&&expiring.length===0){addLog('['+time+'] ✅ Wax dhibaato ah ma jiraan.','ok');return;}
+  addLog('['+time+'] 🚨 '+expired.length+' expired, '+expiring.length+' expiring.',expired.length>0?'err':'warn');
+  if(Notification.permission==='granted')checkNow();
+}
+function addLog(msg,type='ok'){
+  const log=document.getElementById('logBox');if(!log)return;
+  const ph=log.querySelector('[style*="color:#6c757d"]');if(ph)ph.remove();
+  const d=document.createElement('div');d.className='log-line log-'+type;d.textContent=msg;
+  log.insertBefore(d,log.firstChild);while(log.children.length>60)log.removeChild(log.lastChild);
+}
+
+/* ── SW message listener ── */
+function setupSwListener(){
+  if(!('serviceWorker' in navigator))return;
+  navigator.serviceWorker.addEventListener('message',event=>{
+    const{type,expired,expiring,ts}=event.data||{};
+    if(type==='CHECK_RESULT'){
+      const time=ts?new Date(ts).toLocaleTimeString():new Date().toLocaleTimeString();
+      if(expired.length===0&&expiring.length===0)addLog('['+time+'] ✅ BG check: wax dhibaato ah ma jiraan.','ok');
+      else addLog('['+time+'] 🚨 BG: '+expired.length+' expired, '+expiring.length+' expiring.',expired.length>0?'err':'warn');
     }
-    showLogin();
-}
-function showLogin() {
-    document.getElementById('loginContainer').style.display='flex';
-    document.getElementById('navbar').style.display='none';
-}
-function showApp() {
-    document.getElementById('loginContainer').style.display='none';
-    document.getElementById('navbar').style.display='flex';
-    document.getElementById('userDisplay').textContent=`👤 ${currentUser.username} (${currentUser.role})`;
-    setupNav();
-    applyRoles();
-    if (currentUser.role===CONFIG.ROLES.CASHIER) showView('reports'); else showView('dashboard');
-    autoNotifyOnLogin();
-}
-async function handleLogin() {
-    const u=document.getElementById('loginUsername').value.trim();
-    const p=document.getElementById('loginPassword').value;
-    if (!u||!p) { Swal.fire({icon:'warning',title:'Enter credentials',timer:1500}); return; }
-    const users=load(CONFIG.STORAGE_KEYS.USERS);
-    const user=users.find(x=>x.username===u);
-    if (!user) { Swal.fire({icon:'error',title:'Invalid credentials',timer:1500}); return; }
-    if (user.password===await hashPw(p)) {
-        currentUser=user;
-        localStorage.setItem(CONFIG.STORAGE_KEYS.SESSION,u);
-        showApp();
-        Swal.fire({icon:'success',title:'Login successful',timer:1200});
-    } else { Swal.fire({icon:'error',title:'Invalid credentials',timer:1500}); }
+  });
 }
 
-// ── NAV ───────────────────────────────────────────────────────────────────────
-function setupNav() {
-    const menu=document.getElementById('navMenu'); menu.innerHTML='';
-    const items = currentUser.role===CONFIG.ROLES.ADMIN
-        ? [{v:'dashboard',l:'📊 Dashboard'},{v:'products',l:'🧪 Products'},{v:'reports',l:'📋 Reports'},{v:'notifications',l:'🔔 Notifications'}]
-        : [{v:'reports',l:'📋 Reports'},{v:'notifications',l:'🔔 Notifications'}];
-    items.forEach(it=>{
-        const b=document.createElement('button');
-        b.className='nav-btn'; b.dataset.view=it.v; b.textContent=it.l;
-        b.onclick=()=>showView(it.v); menu.appendChild(b);
-    });
-    if (menu.firstChild) menu.firstChild.classList.add('active');
-}
-function applyRoles() {
-    document.querySelectorAll('.role-admin').forEach(el=>{
-        el.style.display=currentUser.role===CONFIG.ROLES.ADMIN?'block':'none';
-    });
-}
-function showView(name) {
-    document.querySelectorAll('.unified-section').forEach(el=>el.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    const t=document.getElementById(name+'View');
-    const b=document.querySelector(`[data-view="${name}"]`);
-    if (t) t.classList.add('active');
-    if (b) b.classList.add('active');
-    applyRoles();
-    if (name==='dashboard')     renderDashboard();
-    if (name==='products')      renderProducts();
-    if (name==='reports')       renderReports();
-    if (name==='notifications') renderNotifSettings();
-}
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded',async()=>{
+  setupSwListener();
+  await initUsers();
+  await migrate();
+  await checkSession();
 
-// ── DASHBOARD ─────────────────────────────────────────────────────────────────
-function renderDashboard() {
-    if (currentUser.role!==CONFIG.ROLES.ADMIN) { showView('reports'); return; }
-    const products=load(CONFIG.STORAGE_KEYS.PRODUCTS);
-    document.getElementById('expiredMedicineAlert').classList.toggle('d-none', products.filter(p=>isExpired(p.expiry)).length===0);
-    const box=document.getElementById('stockExpiryAlerts'); box.innerHTML='';
-    const frag=document.createDocumentFragment(); let count=0;
-    products.filter(p=>isExpired(p.expiry)).forEach(p=>{ const d=document.createElement('div'); d.className='alert alert-danger'; d.innerHTML=`<strong>❌ EXPIRED:</strong> ${sanitize(p.name)} (${new Date(p.expiry).toLocaleDateString()})`; frag.appendChild(d); count++; });
-    products.filter(p=>isExpiring(p.expiry)).forEach(p=>{ const d=document.createElement('div'); d.className='alert alert-warning'; d.innerHTML=`<strong>⚠️ Expiring Soon:</strong> ${sanitize(p.name)} (${new Date(p.expiry).toLocaleDateString()})`; frag.appendChild(d); count++; });
-    if (count===0) box.innerHTML='<p class="text-muted">✅ No alerts.</p>'; else box.appendChild(frag);
-}
-
-// ── PRODUCTS ──────────────────────────────────────────────────────────────────
-function renderProducts() {
-    if (currentUser.role!==CONFIG.ROLES.ADMIN) { showView('reports'); return; }
-    ['editProductId','pName','pQty','pExpiry','filterProd'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-    renderProductsTable();
-}
-function renderProductsTable(filter='') {
-    const products=load(CONFIG.STORAGE_KEYS.PRODUCTS);
-    const list=filter?products.filter(p=>p.name.toLowerCase().includes(filter.toLowerCase())):products;
-    const tbody=document.getElementById('productsTable'); tbody.innerHTML='';
-    const frag=document.createDocumentFragment();
-    list.forEach(p=>{
-        const exp=isExpired(p.expiry), exp2=isExpiring(p.expiry);
-        const tr=document.createElement('tr');
-        tr.className=exp?'expired':exp2?'expiring-soon':'';
-        tr.innerHTML=`<td>${sanitize(p.name)} ${exp?'❌':exp2?'⚠️':''}</td><td>${p.qty}</td><td>${new Date(p.expiry).toLocaleDateString()}</td>
-        <td><span class="badge ${exp?'bg-danger':exp2?'bg-warning':'bg-success'}">${exp?'Expired':exp2?'Expiring':'Good'}</span></td>
-        <td class="role-admin"><button class="btn-accent btn-sm" onclick="editProduct('${p.id}')">Edit</button> <button class="btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Delete</button></td>`;
-        frag.appendChild(tr);
+  document.getElementById('loginBtn').addEventListener('click',handleLogin);
+  document.getElementById('uname').addEventListener('keypress',e=>{if(e.key==='Enter')document.getElementById('upass').focus();});
+  document.getElementById('upass').addEventListener('keypress',e=>{if(e.key==='Enter')handleLogin();});
+  document.getElementById('logoutBtn').addEventListener('click',()=>{
+    Swal.fire({title:'Bax?',icon:'question',showCancelButton:true}).then(r=>{
+      if(!r.isConfirmed)return;clearInterval(tabTimer);clearInterval(cntTimer);localStorage.removeItem(SESS_KEY);currentUser=null;showLogin();
     });
-    tbody.appendChild(frag);
-    applyRoles();
-}
-function handleProductSubmit(e) {
-    if (currentUser.role!==CONFIG.ROLES.ADMIN) { Swal.fire({icon:'error',title:'Access denied'}); return; }
-    e.preventDefault();
-    const id=document.getElementById('editProductId').value;
-    const obj={name:sanitize(document.getElementById('pName').value,100),qty:parseInt(document.getElementById('pQty').value),expiry:document.getElementById('pExpiry').value};
-    if (!obj.name||obj.qty<0||!obj.expiry) { Swal.fire({icon:'warning',title:'Fill all fields'}); return; }
-    const products=load(CONFIG.STORAGE_KEYS.PRODUCTS);
-    if (id) { const i=products.findIndex(p=>p.id===id); if(i!==-1) products[i]={...products[i],...obj}; }
-    else products.push({...obj,id:gid('PROD'),price:0,cost:0});
-    if (save(CONFIG.STORAGE_KEYS.PRODUCTS,products)) { Swal.fire({icon:'success',title:'Saved',timer:1200}); renderProducts(); }
-}
-function editProduct(id) {
-    if (currentUser.role!==CONFIG.ROLES.ADMIN) return;
-    const p=load(CONFIG.STORAGE_KEYS.PRODUCTS).find(p=>p.id===id); if(!p) return;
-    document.getElementById('editProductId').value=p.id;
-    document.getElementById('pName').value=p.name;
-    document.getElementById('pQty').value=p.qty;
-    document.getElementById('pExpiry').value=p.expiry;
-}
-function deleteProduct(id) {
-    if (currentUser.role!==CONFIG.ROLES.ADMIN) return;
-    Swal.fire({title:'Delete product?',icon:'warning',showCancelButton:true}).then(r=>{
-        if (!r.isConfirmed) return;
-        if (save(CONFIG.STORAGE_KEYS.PRODUCTS,load(CONFIG.STORAGE_KEYS.PRODUCTS).filter(p=>p.id!==id)))
-            { Swal.fire({icon:'success',title:'Deleted',timer:1200}); renderProducts(); }
-    });
-}
-
-// ── REPORTS ───────────────────────────────────────────────────────────────────
-function handleReportRangeChange() {
-    const v=document.getElementById('reportRange').value;
+  });
+  document.getElementById('prodForm')?.addEventListener('submit',handleProdSubmit);
+  document.getElementById('filterProd')?.addEventListener('input',debounce(()=>renderProdTable(document.getElementById('filterProd').value),300));
+  document.getElementById('repRange')?.addEventListener('change',()=>{
+    const v=document.getElementById('repRange').value;
     document.getElementById('rFrom').style.display=v==='custom'?'inline-block':'none';
-    document.getElementById('rTo').style.display  =v==='custom'?'inline-block':'none';
-    renderReports();
-}
-function renderReports() {
-    const range=document.getElementById('reportRange').value;
-    let from=null,to=null;
-    const today=new Date(); today.setHours(0,0,0,0);
-    if (range==='next30'){from=today;to=new Date(today.getTime()+30*864e5);}
-    else if(range==='next60'){from=today;to=new Date(today.getTime()+60*864e5);}
-    else if(range==='next90'){from=today;to=new Date(today.getTime()+90*864e5);}
-    else if(range==='custom'){
-        const f=document.getElementById('rFrom').value,t=document.getElementById('rTo').value;
-        if(f){from=new Date(f);from.setHours(0,0,0,0);}
-        if(t){to=new Date(t);to.setHours(23,59,59,999);}
-    }
-    const products=load(CONFIG.STORAGE_KEYS.PRODUCTS);
-    const expiring=products.filter(p=>{ if(isExpired(p.expiry)) return false; const e=new Date(p.expiry); if(from&&e<from) return false; if(to&&e>to) return false; return true; });
-    const expired =products.filter(p=>isExpired(p.expiry));
-    document.getElementById('repTotal').textContent  =expiring.length;
-    document.getElementById('repExpired').textContent=expired.length;
-    const ri=document.getElementById('repItems'); ri.innerHTML='';
-    if(expired.length===0&&expiring.length===0){ ri.innerHTML='<p class="text-muted">No alerts in this range.</p>'; }
-    else {
-        const ul=document.createElement('ul'); ul.className='list-group';
-        expired.forEach(p=>{ const li=document.createElement('li'); li.className='list-group-item alert-danger'; li.innerHTML=`<strong>❌ Expired:</strong> ${sanitize(p.name)} — ${new Date(p.expiry).toLocaleDateString()} (Qty:${p.qty})`; ul.appendChild(li); });
-        expiring.forEach(p=>{ const li=document.createElement('li'); li.className='list-group-item alert-warning'; li.innerHTML=`<strong>⚠️ Expiring:</strong> ${sanitize(p.name)} — ${new Date(p.expiry).toLocaleDateString()} (Qty:${p.qty})`; ul.appendChild(li); });
-        ri.appendChild(ul);
-    }
-    const tbl=document.getElementById('recentSalesTbl'); tbl.innerHTML='';
-    const frag=document.createDocumentFragment();
-    expiring.concat(expired).sort((a,b)=>new Date(a.expiry)-new Date(b.expiry)).forEach(p=>{
-        const tr=document.createElement('tr'); tr.className=isExpired(p.expiry)?'table-warning':'';
-        tr.innerHTML=`<td>${sanitize(p.name)}</td><td>${p.qty}</td><td>${new Date(p.expiry).toLocaleDateString()}</td><td>${isExpired(p.expiry)?'Expired':'Expiring'}</td>`;
-        frag.appendChild(tr);
-    });
-    tbl.appendChild(frag);
-}
-function printExpiryReport() {
-    const label=document.querySelector('#reportRange option:checked').textContent;
-    const w=window.open('','_blank');
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Expiry Report</title>
-    <style>body{font-family:Arial;padding:20px}.alert-danger{background:#f8d7da;padding:10px;border-radius:8px;margin-bottom:8px}.alert-warning{background:#fff3cd;padding:10px;border-radius:8px;margin-bottom:8px}@media print{button{display:none}}</style></head>
-    <body><h1>Lab Expiry Report</h1><p><strong>Range:</strong> ${label}</p><p><strong>Expiring:</strong> ${document.getElementById('repTotal').textContent} | <strong>Expired:</strong> ${document.getElementById('repExpired').textContent}</p>
-    <h2>Alerts</h2>${document.getElementById('repItems').innerHTML}<button onclick="window.print()">Print</button></body></html>`);
-    w.document.close();
-}
+    document.getElementById('rTo').style.display=v==='custom'?'inline-block':'none';
+    renderRep();
+  });
+  document.getElementById('rFrom')?.addEventListener('change',renderRep);
+  document.getElementById('rTo')?.addEventListener('change',renderRep);
+  document.getElementById('printBtn')?.addEventListener('click',printReport);
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  BROWSER PUSH NOTIFICATIONS
-// ══════════════════════════════════════════════════════════════════════════════
-
-async function requestPermission() {
-    if (!('Notification' in window)) { Swal.fire({icon:'error',title:'Not supported in this browser'}); return; }
-    const result = await Notification.requestPermission();
-    updatePermUI();
-    if (result==='granted') Swal.fire({icon:'success',title:'✅ Notifications Enabled!',timer:2000});
-    else Swal.fire({icon:'warning',title:'Permission Denied',text:'Go to browser site settings and allow notifications manually.'});
-}
-
-function updatePermUI() {
-    const pill=document.getElementById('permStatusPill');
-    const text=document.getElementById('permStatusText');
-    const btn =document.getElementById('requestPermBtn');
-    if (!pill) return;
-    const perm=('Notification' in window)?Notification.permission:'unsupported';
-    if (perm==='granted') {
-        pill.className='status-pill granted'; pill.textContent='✅ Granted';
-        text.textContent='Notifications enabled.';
-        if (btn) btn.style.display='none';
-    } else if (perm==='denied') {
-        pill.className='status-pill denied'; pill.textContent='❌ Blocked';
-        text.textContent='Blocked. Open browser site settings → allow notifications.';
-        if (btn) btn.style.display='';
-    } else if (perm==='unsupported') {
-        pill.className='status-pill denied'; pill.textContent='🚫 Not Supported';
-        text.textContent='This browser does not support notifications.';
-        if (btn) btn.style.display='none';
-    } else {
-        pill.className='status-pill default'; pill.textContent='⏳ Not Set';
-        text.textContent='Click "Enable Notifications" to allow expiry alerts.';
-        if (btn) btn.style.display='';
-    }
-}
-
-function fireNotif(title, body, tag='lab-alert') {
-    if (!('Notification' in window)||Notification.permission!=='granted') return false;
-    const opts={body,icon:'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png',badge:'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png',tag,renotify:true,requireInteraction:true};
-    if (swReg) swReg.showNotification(title,opts);
-    else new Notification(title,opts);
-    return true;
-}
-
-function sendTestNotification() {
-    if (Notification.permission!=='granted') { Swal.fire({icon:'warning',title:'Enable notifications first',timer:1800}); return; }
-    fireNotif('🧪 Baxnaano Lab — Test','Notifications are working! Expiry alerts will appear here.','lab-test');
-    addLog('✅ Test notification sent.','ok');
-}
-
-function sendExpiryNotificationNow() {
-    const {expired,expiring}=getAlerts();
-    if (expired.length===0&&expiring.length===0) {
-        addLog('✅ Check done — no alerts.','ok');
-        Swal.fire({icon:'success',title:'✅ All Clear',text:'No expiring or expired items.',timer:2000});
-        return;
-    }
-    if (Notification.permission!=='granted') {
-        Swal.fire({icon:'warning',title:'Notifications not enabled',text:'Enable them in Step 1 first.'});
-        return;
-    }
-    const lines=[...expired.map(p=>`❌ ${p.name} — expired ${p.expiry}`),...expiring.map(p=>`⚠️ ${p.name} — expires ${p.expiry}`)];
-    const title=expired.length>0?`❌ ${expired.length} EXPIRED — Baxnaano Lab`:`⚠️ ${expiring.length} expiring soon — Baxnaano Lab`;
-    const body=lines.slice(0,5).join('\n')+(lines.length>5?`\n…and ${lines.length-5} more`:'');
-    fireNotif(title,body,'lab-expiry');
-    addLog(`🚨 Sent: ${expired.length} expired, ${expiring.length} expiring.`,expired.length>0?'err':'warn');
-    if (swReg&&navigator.serviceWorker.controller)
-        navigator.serviceWorker.controller.postMessage({type:'CHECK_EXPIRY',payload:{expired,expiring}});
-}
-
-async function autoNotifyOnLogin() {
-    if (!('Notification' in window)) return;
-    if (Notification.permission==='granted') {
-        setTimeout(()=>{ const a=getAlerts(); if(a.expired.length>0||a.expiring.length>0) sendExpiryNotificationNow(); },1500);
-        return;
-    }
-    if (Notification.permission==='default') {
-        const {isConfirmed}=await Swal.fire({icon:'info',title:'🔔 Enable Background Alerts?',text:'Get notified when lab items are expired or expiring — even when this tab is closed.',showCancelButton:true,confirmButtonText:'Enable',cancelButtonText:'Later'});
-        if (isConfirmed) await requestPermission();
-    }
-}
-
-// ── SERVICE WORKER ────────────────────────────────────────────────────────────
-
-async function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) {
-        Swal.fire({icon:'error',title:'Not Supported',text:'Service Workers require a modern browser on HTTPS or localhost.'});
-        return;
-    }
-    try {
-        const code = document.getElementById('swSource').textContent;
-        const blob = new Blob([code], {type:'application/javascript'});
-        const url  = URL.createObjectURL(blob);
-        swReg = await navigator.serviceWorker.register(url, {scope:'/'});
-        await navigator.serviceWorker.ready;
-        updateSwUI();
-
-        /* Hand the saved interval to the SW so it can start its own timer */
-        const mins = parseInt(localStorage.getItem(CONFIG.STORAGE_KEYS.INTERVAL)||'30');
-        if (navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({type:'START_SCHEDULE',payload:{intervalMins:mins}});
-        } else {
-            /* Wait for SW to become controller */
-            navigator.serviceWorker.addEventListener('controllerchange', ()=>{
-                navigator.serviceWorker.controller.postMessage({type:'START_SCHEDULE',payload:{intervalMins:mins}});
-            });
-        }
-
-        addLog('⚙️ Background Worker installed & timer started.','ok');
-        Swal.fire({icon:'success',title:'Background Worker Installed',text:'Alerts will fire automatically even with this tab closed.',timer:3000});
-
-        /* Register Periodic Background Sync if available (Chrome Android) */
-        try {
-            const status = await navigator.permissions.query({name:'periodic-background-sync'});
-            if (status.state==='granted') {
-                await swReg.periodicSync.register('lab-expiry-check',{minInterval: mins * 60000});
-                addLog('📡 Periodic Background Sync registered.','ok');
-            }
-        } catch(e) { /* Not supported — SW timer is sufficient */ }
-
-    } catch(err) {
-        addLog('❌ SW failed: '+err.message,'err');
-        Swal.fire({icon:'error',title:'Worker Installation Failed',text:err.message+'\n\nRequires HTTPS or localhost.'});
-    }
-}
-
-async function unregisterServiceWorker() {
-    if (!swReg) { swReg = await navigator.serviceWorker.getRegistration().catch(()=>null); }
-    if (!swReg) { Swal.fire({icon:'info',title:'No worker installed',timer:1500}); return; }
-    if (navigator.serviceWorker.controller)
-        navigator.serviceWorker.controller.postMessage({type:'STOP_SCHEDULE'});
-    await swReg.unregister();
-    swReg = null;
-    updateSwUI();
-    addLog('🗑 Background Worker removed.','warn');
-    Swal.fire({icon:'success',title:'Worker Removed',timer:1500});
-}
-
-function updateSwUI() {
-    const pill=document.getElementById('swStatusPill');
-    const text=document.getElementById('swStatusText');
-    if (!pill) return;
-    if (!('serviceWorker' in navigator)) {
-        pill.className='status-pill denied'; pill.textContent='🚫 Not Supported';
-        text.textContent='Your browser does not support Service Workers.'; return;
-    }
+  /* Restore existing SW */
+  if('serviceWorker' in navigator){
     navigator.serviceWorker.getRegistration().then(reg=>{
-        if (reg) {
-            swReg=reg;
-            pill.className='status-pill granted'; pill.textContent='✅ Installed & Running';
-            text.textContent='Background Worker active — alerts fire even with tab closed.';
-        } else {
-            pill.className='status-pill default'; pill.textContent='⏳ Not Installed';
-            text.textContent='Click "Install Background Worker" to enable.';
-        }
+      if(!reg)return;swReg=reg;
+      const mins=parseInt(localStorage.getItem(INT_KEY)||'30');
+      navigator.serviceWorker.ready.then(()=>{
+        if(navigator.serviceWorker.controller)
+          navigator.serviceWorker.controller.postMessage({type:'START',payload:{mins}});
+      });
     });
-}
-
-/* Main thread listens for messages from SW */
-function setupSwListener() {
-    if (!('serviceWorker' in navigator)) return;
-    navigator.serviceWorker.addEventListener('message', event => {
-        const {type, expired, expiring} = event.data || {};
-        if (type === 'GET_PRODUCTS') {
-            /* SW is requesting product data — send it back via the port */
-            const products = load(CONFIG.STORAGE_KEYS.PRODUCTS);
-            event.ports[0].postMessage(products);
-        }
-        if (type === 'CHECK_RESULT') {
-            const time = new Date().toLocaleTimeString();
-            if (expired.length > 0 || expiring.length > 0) {
-                addLog(`[${time}] 🚨 BG check: ${expired.length} expired, ${expiring.length} expiring.`, expired.length>0?'err':'warn');
-            } else {
-                addLog(`[${time}] ✅ BG check: all clear.`, 'ok');
-            }
-        }
-        if (type === 'SCHEDULE_STARTED') {
-            addLog(`▶ BG Worker timer running (every ${event.data.intervalMins} min).`,'ok');
-        }
-    });
-}
-
-// ── IN-TAB SCHEDULE (backup for when SW is not available) ──────────────────
-
-function renderNotifSettings() {
-    updatePermUI();
-    updateSwUI();
-    const s=localStorage.getItem(CONFIG.STORAGE_KEYS.INTERVAL);
-    if (s) document.getElementById('intervalSelect').value=s;
-}
-
-function saveInterval() {
-    const mins=parseInt(document.getElementById('intervalSelect').value);
-    localStorage.setItem(CONFIG.STORAGE_KEYS.INTERVAL, mins);
-    /* Update SW timer if running */
-    if (swReg && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({type:'START_SCHEDULE', payload:{intervalMins:mins}});
-        addLog(`⚙️ BG Worker interval updated to ${mins} min.`,'ok');
-    }
-    /* Also restart in-tab timer if it's running */
-    if (scheduleTimer) startSchedule();
-}
-
-function startSchedule() {
-    if (scheduleTimer) clearInterval(scheduleTimer);
-    const mins=parseInt(document.getElementById('intervalSelect').value);
-    localStorage.setItem(CONFIG.STORAGE_KEYS.INTERVAL, mins);
-    scheduleTimer=setInterval(runCheck, mins*60000);
-    nextCheckTime=new Date(Date.now()+mins*60000);
-    document.getElementById('scheduleDot').className='pulse-dot green';
-    document.getElementById('startScheduleBtn').style.display='none';
-    document.getElementById('stopScheduleBtn').style.display='';
-    addLog(`▶ In-tab timer started (every ${mins} min). Also start BG Worker above for true background alerts.`,'ok');
-    runCheck();
-    startCountdown();
-
-    /* Also tell SW */
-    if (swReg && navigator.serviceWorker.controller)
-        navigator.serviceWorker.controller.postMessage({type:'START_SCHEDULE',payload:{intervalMins:mins}});
-}
-
-function stopSchedule() {
-    clearInterval(scheduleTimer); scheduleTimer=null; nextCheckTime=null;
-    clearInterval(countdownTimer); countdownTimer=null;
-    document.getElementById('scheduleDot').className='pulse-dot red';
-    document.getElementById('nextCheckLabel').textContent='Stopped';
-    document.getElementById('startScheduleBtn').style.display='';
-    document.getElementById('stopScheduleBtn').style.display='none';
-    addLog('⏹ In-tab timer stopped. BG Worker (if installed) continues independently.','warn');
-    if (swReg && navigator.serviceWorker.controller)
-        navigator.serviceWorker.controller.postMessage({type:'STOP_SCHEDULE'});
-}
-
-function startCountdown() {
-    clearInterval(countdownTimer);
-    countdownTimer=setInterval(()=>{
-        if (!nextCheckTime) return;
-        const diff=Math.max(0,Math.round((nextCheckTime-Date.now())/1000));
-        const el=document.getElementById('nextCheckLabel');
-        if (el) el.textContent=`Next: ${Math.floor(diff/60)}m ${diff%60}s`;
-    },1000);
-}
-
-function runCheck() {
-    const mins=parseInt(document.getElementById('intervalSelect')?.value||30);
-    nextCheckTime=new Date(Date.now()+mins*60000);
-    const {expired,expiring}=getAlerts();
-    const time=new Date().toLocaleTimeString();
-    if (expired.length===0&&expiring.length===0) addLog(`[${time}] ✅ All clear — no alerts.`,'ok');
-    else {
-        addLog(`[${time}] 🚨 ${expired.length} expired, ${expiring.length} expiring.`,expired.length>0?'err':'warn');
-        if (Notification.permission==='granted') sendExpiryNotificationNow();
-        else addLog('⚠️ Notifications blocked — cannot send.','warn');
-    }
-}
-
-function addLog(msg,type='ok') {
-    const log=document.getElementById('scheduleLog'); if(!log) return;
-    const ph=log.querySelector('.text-muted'); if(ph) ph.remove();
-    const d=document.createElement('div'); d.className=`log-line log-${type}`; d.textContent=msg;
-    log.insertBefore(d,log.firstChild);
-    while(log.children.length>50) log.removeChild(log.lastChild);
-}
-
-// ── INIT ──────────────────────────────────────────────────────────────────────
-async function initDefaultData() {
-    const users=load(CONFIG.STORAGE_KEYS.USERS);
-    if (users.length===0) save(CONFIG.STORAGE_KEYS.USERS,[{username:'admin',password:await hashPw('admin123'),role:CONFIG.ROLES.ADMIN}]);
-}
-
-document.addEventListener('DOMContentLoaded', async ()=>{
-    document.getElementById('loginBtn').addEventListener('click',handleLogin);
-    document.getElementById('loginUsername').addEventListener('keypress',e=>{ if(e.key==='Enter') document.getElementById('loginPassword').focus(); });
-    document.getElementById('loginPassword').addEventListener('keypress',e=>{ if(e.key==='Enter') handleLogin(); });
-    document.getElementById('logoutBtn').addEventListener('click',()=>{
-        Swal.fire({title:'Logout?',icon:'question',showCancelButton:true}).then(r=>{
-            if (!r.isConfirmed) return;
-            clearInterval(scheduleTimer); clearInterval(countdownTimer);
-            localStorage.removeItem(CONFIG.STORAGE_KEYS.SESSION);
-            currentUser=null; showLogin();
-        });
-    });
-    document.getElementById('productForm')?.addEventListener('submit',handleProductSubmit);
-    document.getElementById('filterProd')?.addEventListener('input',debounce(()=>renderProductsTable(document.getElementById('filterProd').value),300));
-    document.getElementById('reportRange').addEventListener('change',handleReportRangeChange);
-    document.getElementById('rFrom').addEventListener('change',renderReports);
-    document.getElementById('rTo').addEventListener('change',renderReports);
-    document.getElementById('printExpiryReportBtn').addEventListener('click',printExpiryReport);
-
-    setupSwListener();
-    await initDefaultData();
-    await checkSession();
-
-    /* Restore existing SW if already installed */
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistration().then(reg=>{
-            if (reg) {
-                swReg=reg;
-                const mins=parseInt(localStorage.getItem(CONFIG.STORAGE_KEYS.INTERVAL)||'30');
-                if (navigator.serviceWorker.controller)
-                    navigator.serviceWorker.controller.postMessage({type:'START_SCHEDULE',payload:{intervalMins:mins}});
-            }
-        });
-    }
+  }
 });
 
-window.editProduct=editProduct; window.deleteProduct=deleteProduct;
-window.requestPermission=requestPermission; window.sendTestNotification=sendTestNotification;
-window.sendExpiryNotificationNow=sendExpiryNotificationNow;
-window.startSchedule=startSchedule; window.stopSchedule=stopSchedule; window.saveInterval=saveInterval;
-window.registerServiceWorker=registerServiceWorker; window.unregisterServiceWorker=unregisterServiceWorker;
+window.requestPerm=requestPerm;window.testNotif=testNotif;window.checkNow=checkNow;
+window.installSW=installSW;window.removeSW=removeSW;window.saveInterval=saveInterval;
+window.startSchedule=startSchedule;window.stopSchedule=stopSchedule;
+window.editProd=editProd;window.delProd=delProd;
 </script>
 </body>
 </html>
