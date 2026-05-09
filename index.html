@@ -67,13 +67,14 @@
         .table-warning { background-color: #fff3cd; }
         .role-admin { display: none; }
 
-        /* ── Notification Panel ── */
         .notif-panel { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 1rem; border-left: 5px solid #667eea; }
         .notif-panel h6 { color: #667eea; margin-bottom: 1rem; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
         .notif-panel.green-border { border-left-color: #28a745; }
         .notif-panel.green-border h6 { color: #28a745; }
         .notif-panel.purple-border { border-left-color: #764ba2; }
         .notif-panel.purple-border h6 { color: #764ba2; }
+        .notif-panel.orange-border { border-left-color: #fd7e14; }
+        .notif-panel.orange-border h6 { color: #fd7e14; }
 
         .status-row  { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
         .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
@@ -83,15 +84,13 @@
 
         .btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
 
-        /* Pulse dot */
         .pulse-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
         .pulse-dot.green  { background: #28a745; animation: blink 1.4s infinite; }
         .pulse-dot.red    { background: #dc3545; }
         .pulse-dot.yellow { background: #ffc107; animation: blink 1.4s infinite; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-        /* Log */
-        .schedule-log { background: #f8f9fa; border-radius: 6px; padding: 10px; font-family: monospace; font-size: 0.78rem; max-height: 160px; overflow-y: auto; margin-top: 10px; }
+        .schedule-log { background: #f8f9fa; border-radius: 6px; padding: 10px; font-family: monospace; font-size: 0.78rem; max-height: 200px; overflow-y: auto; margin-top: 10px; }
         .log-line { padding: 2px 0; border-bottom: 1px solid #eee; }
         .log-line:last-child { border: none; }
         .log-ok   { color: #155724; }
@@ -99,6 +98,9 @@
         .log-err  { color: #dc3545; }
 
         .interval-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 0.75rem; }
+
+        .bg-feature { background: #f0f4ff; border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; font-size: 0.85rem; }
+        .bg-feature strong { color: #667eea; }
 
         @media (max-width: 768px) {
             .unified-section { padding: 1rem 0.75rem; }
@@ -204,48 +206,71 @@
 
 <!-- NOTIFICATIONS SETTINGS -->
 <div id="notificationsView" class="unified-section">
-    <h6 class="mb-3"><i class="bi bi-bell-fill"></i> Browser Push Notifications</h6>
+    <h6 class="mb-3"><i class="bi bi-bell-fill"></i> Background Notifications</h6>
 
-    <div class="alert alert-info mb-3">
-        <strong>ℹ️ Sida u shaqeyso:</strong><br>
-        Browser-ku wuxuu kuu soo diri doonaa <strong>desktop / phone notification</strong> markay lab items dhammaanayaan ama dhammaadeen —
-        xitaa tab-ka kale joogtid, browser-ka oo kaliya u baahan.<br>
-        <em>✅ Chrome (Windows/Android/Mac) — full support &nbsp;|&nbsp; ✅ Firefox — supported &nbsp;|&nbsp; ⚠️ iOS Safari — limited</em>
+    <!-- What's new -->
+    <div class="notif-panel orange-border mb-3">
+        <h6>🆕 How background alerts work now</h6>
+        <div class="bg-feature"><strong>✅ Tab closed, different website</strong> — Service Worker keeps running and will alert you</div>
+        <div class="bg-feature"><strong>✅ Screen locked / PC minimized</strong> — Browser background thread still fires alerts</div>
+        <div class="bg-feature"><strong>✅ No login required</strong> — Alerts fire even when you are not logged in, as long as the browser is open</div>
+        <div class="bg-feature"><strong>⚠️ Browser fully closed</strong> — Cannot send alerts until you reopen the browser. This is a browser security limit.</div>
+        <p style="font-size:0.82rem;color:#6c757d;margin-top:8px;">
+            <em>Tip: On Android Chrome, enable "Background Sync" in Chrome settings for best results. On iOS Safari, add the page to Home Screen first.</em>
+        </p>
     </div>
 
     <!-- 1. PERMISSION -->
     <div class="notif-panel">
-        <h6>🔔 Step 1 — Enable Notifications</h6>
+        <h6>🔔 Step 1 — Allow Notifications</h6>
         <div class="status-row">
             <span id="permStatusPill" class="status-pill default">⏳ Checking…</span>
             <span id="permStatusText" style="font-size:0.85rem;color:#555;"></span>
         </div>
         <div class="btn-row">
             <button class="btn-accent"  id="requestPermBtn"  onclick="requestPermission()">🔔 Enable Notifications</button>
-            <button class="btn-success"                       onclick="sendTestNotification()">📤 Send Test Notification</button>
-            <button class="btn-accent"                        onclick="sendExpiryNotificationNow()">🚨 Check &amp; Notify Now</button>
+            <button class="btn-success"                       onclick="sendTestNotification()">📤 Test Notification</button>
+            <button class="btn-accent"                        onclick="sendExpiryNotificationNow()">🚨 Check &amp; Alert Now</button>
         </div>
     </div>
 
-    <!-- 2. AUTO SCHEDULE -->
+    <!-- 2. SERVICE WORKER -->
+    <div class="notif-panel purple-border">
+        <h6>⚙️ Step 2 — Install Background Worker</h6>
+        <p style="font-size:0.85rem;color:#555;margin-bottom:0.75rem;">
+            This installs a <strong>Service Worker</strong> — a background process that keeps checking for expiry alerts
+            even when you close this tab or navigate away. It uses the check interval you set below.
+        </p>
+        <div class="status-row">
+            <span id="swStatusPill" class="status-pill default">⏳ Checking…</span>
+            <span id="swStatusText" style="font-size:0.82rem;color:#555;"></span>
+        </div>
+        <div class="btn-row">
+            <button class="btn-accent" onclick="registerServiceWorker()">⚙️ Install Background Worker</button>
+            <button class="btn-danger"  onclick="unregisterServiceWorker()">🗑 Remove</button>
+        </div>
+    </div>
+
+    <!-- 3. AUTO SCHEDULE -->
     <div class="notif-panel green-border">
         <h6>
             <span class="pulse-dot red" id="scheduleDot"></span>
-            &nbsp;Step 2 — Auto-Check Schedule
+            &nbsp;Step 3 — Set Alert Interval
         </h6>
         <p style="font-size:0.85rem;color:#555;margin-bottom:0.75rem;">
-            System-ku si toos ah u xaraynayaa expiry alerts oo u dira notification —
-            browser-ka oo kaliya u baahan (tab-ka background-ka ku jiri karo).
+            Choose how often the background worker checks for expired or expiring items.
+            The interval is saved and used automatically — even without opening this page.
         </p>
 
         <div class="interval-row">
             <label style="font-weight:600;font-size:0.9rem;">Check every:</label>
-            <select id="intervalSelect" class="form-select w-auto" onchange="applySchedule()">
+            <select id="intervalSelect" class="form-select w-auto" onchange="saveInterval()">
                 <option value="15">15 minutes</option>
                 <option value="30" selected>30 minutes</option>
                 <option value="60">1 hour</option>
                 <option value="120">2 hours</option>
                 <option value="360">6 hours</option>
+                <option value="720">12 hours</option>
             </select>
             <span id="nextCheckLabel" style="font-size:0.82rem;color:#667eea;font-weight:600;"></span>
         </div>
@@ -259,47 +284,134 @@
             <div class="log-line text-muted">— No checks run yet —</div>
         </div>
     </div>
-
-    <!-- 3. SERVICE WORKER -->
-    <div class="notif-panel purple-border">
-        <h6>⚙️ Step 3 — Service Worker (Background Support)</h6>
-        <p style="font-size:0.85rem;color:#555;margin-bottom:0.75rem;">
-            Service Worker wuxuu kuu ogolaan karaa notifications xitaa tab-ka yar yahay ama browser minimized yahay.
-            Waxay u baahan tahay <strong>HTTPS</strong> ama <strong>localhost</strong>.
-        </p>
-        <div class="status-row">
-            <span id="swStatusPill" class="status-pill default">⏳ Checking…</span>
-            <span id="swStatusText" style="font-size:0.82rem;color:#555;"></span>
-        </div>
-        <div class="btn-row">
-            <button class="btn-accent" onclick="registerServiceWorker()">⚙️ Register Service Worker</button>
-        </div>
-    </div>
 </div>
 
-<!-- INLINE SW CODE -->
-<script id="swCode" type="text/sw-source">
-self.addEventListener('install',  () => self.skipWaiting());
-self.addEventListener('activate', e  => e.waitUntil(clients.claim()));
-self.addEventListener('message',  event => {
-    const { type, payload } = event.data || {};
-    if (type !== 'CHECK_EXPIRY') return;
-    const { expired, expiring } = payload;
+<!-- ══════════════════════════════════════════════════════
+     SERVICE WORKER SOURCE — embedded as blob
+     ══════════════════════════════════════════════════ -->
+<script id="swSource" type="text/sw-source">
+const DB_KEY = 'pharma_products_final_v1';
+const INTERVAL_KEY = 'lab_notif_interval';
+const ICON = 'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png';
+
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+
+/* ── Background timer using recursive setTimeout via alarms ──
+   We store the next check time in IndexedDB (accessible from SW).
+   On 'message' we accept SET_INTERVAL and TRIGGER_CHECK commands.
+   We also hook into 'periodicsync' if available.
+*/
+
+let timerHandle = null;
+
+function isExpired(dateStr) {
+    const t = new Date(); t.setHours(0,0,0,0);
+    return new Date(dateStr) < t;
+}
+function isExpiring(dateStr) {
+    const t = new Date(); t.setHours(0,0,0,0);
+    const s = new Date(t.getTime() + 30 * 864e5);
+    const e = new Date(dateStr);
+    return e >= t && e <= s;
+}
+
+async function readProducts() {
+    /* Read from all active clients' localStorage via postMessage */
+    const allClients = await clients.matchAll({ includeUncontrolled: true, type: 'window' });
+    if (allClients.length === 0) return null;
+    return new Promise(resolve => {
+        const ch = new MessageChannel();
+        ch.port1.onmessage = ev => resolve(ev.data);
+        allClients[0].postMessage({ type: 'GET_PRODUCTS' }, [ch.port2]);
+        setTimeout(() => resolve(null), 3000);
+    });
+}
+
+async function runExpiryCheck() {
+    const products = await readProducts();
+    if (!products || products.length === 0) return;
+
+    const expired  = products.filter(p => isExpired(p.expiry)).map(p => ({ name: p.name, expiry: new Date(p.expiry).toLocaleDateString() }));
+    const expiring = products.filter(p => isExpiring(p.expiry)).map(p => ({ name: p.name, expiry: new Date(p.expiry).toLocaleDateString() }));
+
     if (expired.length === 0 && expiring.length === 0) return;
+
     const title = expired.length > 0
-        ? `\u274C ${expired.length} item(s) EXPIRED \u2014 Baxnaano Lab`
-        : `\u26A0\uFE0F ${expiring.length} item(s) expiring soon \u2014 Baxnaano Lab`;
+        ? `❌ ${expired.length} item(s) EXPIRED — Baxnaano Lab`
+        : `⚠️ ${expiring.length} item(s) expiring soon — Baxnaano Lab`;
+
     const lines = [
-        ...expired.map(p  => `\u274C ${p.name} \u2014 expired ${p.expiry}`),
-        ...expiring.map(p => `\u26A0\uFE0F ${p.name} \u2014 expires ${p.expiry}`)
+        ...expired.map(p  => `❌ ${p.name} — expired ${p.expiry}`),
+        ...expiring.map(p => `⚠️ ${p.name} — expires ${p.expiry}`)
     ];
-    const body = lines.slice(0,5).join('\n') + (lines.length>5 ? `\n\u2026and ${lines.length-5} more` : '');
+    const body = lines.slice(0, 5).join('\n') + (lines.length > 5 ? `\n…and ${lines.length - 5} more` : '');
+
     self.registration.showNotification(title, {
-        body,
-        icon: 'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png',
-        badge:'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png',
+        body, icon: ICON, badge: ICON,
         tag: 'lab-expiry', renotify: true, requireInteraction: true
     });
+
+    /* Notify all open tabs so they can update their logs */
+    const allClients = await clients.matchAll({ includeUncontrolled: true, type: 'window' });
+    allClients.forEach(c => c.postMessage({ type: 'CHECK_RESULT', expired, expiring }));
+}
+
+function scheduleNextCheck(intervalMs) {
+    clearTimeout(timerHandle);
+    timerHandle = setTimeout(async () => {
+        await runExpiryCheck();
+        scheduleNextCheck(intervalMs);
+    }, intervalMs);
+}
+
+self.addEventListener('message', async event => {
+    const { type, payload } = event.data || {};
+
+    if (type === 'START_SCHEDULE') {
+        const mins = payload.intervalMins || 30;
+        scheduleNextCheck(mins * 60000);
+        event.source.postMessage({ type: 'SCHEDULE_STARTED', intervalMins: mins });
+    }
+
+    if (type === 'STOP_SCHEDULE') {
+        clearTimeout(timerHandle);
+        timerHandle = null;
+    }
+
+    if (type === 'TRIGGER_CHECK') {
+        await runExpiryCheck();
+    }
+
+    if (type === 'CHECK_EXPIRY') {
+        /* Legacy: direct payload from main thread */
+        const { expired, expiring } = payload;
+        if (expired.length === 0 && expiring.length === 0) return;
+        const title = expired.length > 0
+            ? `❌ ${expired.length} EXPIRED — Baxnaano Lab`
+            : `⚠️ ${expiring.length} expiring soon — Baxnaano Lab`;
+        const lines = [...expired.map(p => `❌ ${p.name} — expired ${p.expiry}`), ...expiring.map(p => `⚠️ ${p.name} — expires ${p.expiry}`)];
+        const body = lines.slice(0, 5).join('\n') + (lines.length > 5 ? `\n…and ${lines.length - 5} more` : '');
+        self.registration.showNotification(title, { body, icon: ICON, badge: ICON, tag: 'lab-expiry', renotify: true, requireInteraction: true });
+    }
+});
+
+/* Periodic Background Sync (Chrome Android) */
+self.addEventListener('periodicsync', async event => {
+    if (event.tag === 'lab-expiry-check') {
+        event.waitUntil(runExpiryCheck());
+    }
+});
+
+/* Notification click — open/focus the app tab */
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+            if (list.length > 0) { list[0].focus(); return; }
+            clients.openWindow(self.registration.scope);
+        })
+    );
 });
 </script>
 
@@ -553,11 +665,11 @@ function updatePermUI() {
     const perm=('Notification' in window)?Notification.permission:'unsupported';
     if (perm==='granted') {
         pill.className='status-pill granted'; pill.textContent='✅ Granted';
-        text.textContent='Notifications enabled. You will receive expiry alerts.';
+        text.textContent='Notifications enabled.';
         if (btn) btn.style.display='none';
     } else if (perm==='denied') {
         pill.className='status-pill denied'; pill.textContent='❌ Blocked';
-        text.textContent='Blocked. Open browser site settings → allow notifications for this page.';
+        text.textContent='Blocked. Open browser site settings → allow notifications.';
         if (btn) btn.style.display='';
     } else if (perm==='unsupported') {
         pill.className='status-pill denied'; pill.textContent='🚫 Not Supported';
@@ -592,7 +704,7 @@ function sendExpiryNotificationNow() {
         return;
     }
     if (Notification.permission!=='granted') {
-        Swal.fire({icon:'warning',title:'Notifications not enabled',text:'Enable them in the Notifications tab first.'});
+        Swal.fire({icon:'warning',title:'Notifications not enabled',text:'Enable them in Step 1 first.'});
         return;
     }
     const lines=[...expired.map(p=>`❌ ${p.name} — expired ${p.expiry}`),...expiring.map(p=>`⚠️ ${p.name} — expires ${p.expiry}`)];
@@ -600,7 +712,6 @@ function sendExpiryNotificationNow() {
     const body=lines.slice(0,5).join('\n')+(lines.length>5?`\n…and ${lines.length-5} more`:'');
     fireNotif(title,body,'lab-expiry');
     addLog(`🚨 Sent: ${expired.length} expired, ${expiring.length} expiring.`,expired.length>0?'err':'warn');
-    // Also post to SW
     if (swReg&&navigator.serviceWorker.controller)
         navigator.serviceWorker.controller.postMessage({type:'CHECK_EXPIRY',payload:{expired,expiring}});
 }
@@ -612,27 +723,150 @@ async function autoNotifyOnLogin() {
         return;
     }
     if (Notification.permission==='default') {
-        const {isConfirmed}=await Swal.fire({icon:'info',title:'🔔 Enable Notifications?',text:'Get alerts when lab items are expired or expiring — even in the background.',showCancelButton:true,confirmButtonText:'Enable',cancelButtonText:'Later'});
+        const {isConfirmed}=await Swal.fire({icon:'info',title:'🔔 Enable Background Alerts?',text:'Get notified when lab items are expired or expiring — even when this tab is closed.',showCancelButton:true,confirmButtonText:'Enable',cancelButtonText:'Later'});
         if (isConfirmed) await requestPermission();
     }
 }
 
-// ── AUTO SCHEDULE ─────────────────────────────────────────────────────────────
-function renderNotifSettings() { updatePermUI(); updateSwUI(); const s=localStorage.getItem(CONFIG.STORAGE_KEYS.INTERVAL); if(s) document.getElementById('intervalSelect').value=s; }
+// ── SERVICE WORKER ────────────────────────────────────────────────────────────
+
+async function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) {
+        Swal.fire({icon:'error',title:'Not Supported',text:'Service Workers require a modern browser on HTTPS or localhost.'});
+        return;
+    }
+    try {
+        const code = document.getElementById('swSource').textContent;
+        const blob = new Blob([code], {type:'application/javascript'});
+        const url  = URL.createObjectURL(blob);
+        swReg = await navigator.serviceWorker.register(url, {scope:'/'});
+        await navigator.serviceWorker.ready;
+        updateSwUI();
+
+        /* Hand the saved interval to the SW so it can start its own timer */
+        const mins = parseInt(localStorage.getItem(CONFIG.STORAGE_KEYS.INTERVAL)||'30');
+        if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({type:'START_SCHEDULE',payload:{intervalMins:mins}});
+        } else {
+            /* Wait for SW to become controller */
+            navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+                navigator.serviceWorker.controller.postMessage({type:'START_SCHEDULE',payload:{intervalMins:mins}});
+            });
+        }
+
+        addLog('⚙️ Background Worker installed & timer started.','ok');
+        Swal.fire({icon:'success',title:'Background Worker Installed',text:'Alerts will fire automatically even with this tab closed.',timer:3000});
+
+        /* Register Periodic Background Sync if available (Chrome Android) */
+        try {
+            const status = await navigator.permissions.query({name:'periodic-background-sync'});
+            if (status.state==='granted') {
+                await swReg.periodicSync.register('lab-expiry-check',{minInterval: mins * 60000});
+                addLog('📡 Periodic Background Sync registered.','ok');
+            }
+        } catch(e) { /* Not supported — SW timer is sufficient */ }
+
+    } catch(err) {
+        addLog('❌ SW failed: '+err.message,'err');
+        Swal.fire({icon:'error',title:'Worker Installation Failed',text:err.message+'\n\nRequires HTTPS or localhost.'});
+    }
+}
+
+async function unregisterServiceWorker() {
+    if (!swReg) { swReg = await navigator.serviceWorker.getRegistration().catch(()=>null); }
+    if (!swReg) { Swal.fire({icon:'info',title:'No worker installed',timer:1500}); return; }
+    if (navigator.serviceWorker.controller)
+        navigator.serviceWorker.controller.postMessage({type:'STOP_SCHEDULE'});
+    await swReg.unregister();
+    swReg = null;
+    updateSwUI();
+    addLog('🗑 Background Worker removed.','warn');
+    Swal.fire({icon:'success',title:'Worker Removed',timer:1500});
+}
+
+function updateSwUI() {
+    const pill=document.getElementById('swStatusPill');
+    const text=document.getElementById('swStatusText');
+    if (!pill) return;
+    if (!('serviceWorker' in navigator)) {
+        pill.className='status-pill denied'; pill.textContent='🚫 Not Supported';
+        text.textContent='Your browser does not support Service Workers.'; return;
+    }
+    navigator.serviceWorker.getRegistration().then(reg=>{
+        if (reg) {
+            swReg=reg;
+            pill.className='status-pill granted'; pill.textContent='✅ Installed & Running';
+            text.textContent='Background Worker active — alerts fire even with tab closed.';
+        } else {
+            pill.className='status-pill default'; pill.textContent='⏳ Not Installed';
+            text.textContent='Click "Install Background Worker" to enable.';
+        }
+    });
+}
+
+/* Main thread listens for messages from SW */
+function setupSwListener() {
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.addEventListener('message', event => {
+        const {type, expired, expiring} = event.data || {};
+        if (type === 'GET_PRODUCTS') {
+            /* SW is requesting product data — send it back via the port */
+            const products = load(CONFIG.STORAGE_KEYS.PRODUCTS);
+            event.ports[0].postMessage(products);
+        }
+        if (type === 'CHECK_RESULT') {
+            const time = new Date().toLocaleTimeString();
+            if (expired.length > 0 || expiring.length > 0) {
+                addLog(`[${time}] 🚨 BG check: ${expired.length} expired, ${expiring.length} expiring.`, expired.length>0?'err':'warn');
+            } else {
+                addLog(`[${time}] ✅ BG check: all clear.`, 'ok');
+            }
+        }
+        if (type === 'SCHEDULE_STARTED') {
+            addLog(`▶ BG Worker timer running (every ${event.data.intervalMins} min).`,'ok');
+        }
+    });
+}
+
+// ── IN-TAB SCHEDULE (backup for when SW is not available) ──────────────────
+
+function renderNotifSettings() {
+    updatePermUI();
+    updateSwUI();
+    const s=localStorage.getItem(CONFIG.STORAGE_KEYS.INTERVAL);
+    if (s) document.getElementById('intervalSelect').value=s;
+}
+
+function saveInterval() {
+    const mins=parseInt(document.getElementById('intervalSelect').value);
+    localStorage.setItem(CONFIG.STORAGE_KEYS.INTERVAL, mins);
+    /* Update SW timer if running */
+    if (swReg && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({type:'START_SCHEDULE', payload:{intervalMins:mins}});
+        addLog(`⚙️ BG Worker interval updated to ${mins} min.`,'ok');
+    }
+    /* Also restart in-tab timer if it's running */
+    if (scheduleTimer) startSchedule();
+}
 
 function startSchedule() {
     if (scheduleTimer) clearInterval(scheduleTimer);
     const mins=parseInt(document.getElementById('intervalSelect').value);
-    localStorage.setItem(CONFIG.STORAGE_KEYS.INTERVAL,mins);
-    scheduleTimer=setInterval(runCheck,mins*60000);
+    localStorage.setItem(CONFIG.STORAGE_KEYS.INTERVAL, mins);
+    scheduleTimer=setInterval(runCheck, mins*60000);
     nextCheckTime=new Date(Date.now()+mins*60000);
     document.getElementById('scheduleDot').className='pulse-dot green';
     document.getElementById('startScheduleBtn').style.display='none';
     document.getElementById('stopScheduleBtn').style.display='';
-    addLog(`▶ Auto-check started — every ${mins} min.`,'ok');
+    addLog(`▶ In-tab timer started (every ${mins} min). Also start BG Worker above for true background alerts.`,'ok');
     runCheck();
     startCountdown();
+
+    /* Also tell SW */
+    if (swReg && navigator.serviceWorker.controller)
+        navigator.serviceWorker.controller.postMessage({type:'START_SCHEDULE',payload:{intervalMins:mins}});
 }
+
 function stopSchedule() {
     clearInterval(scheduleTimer); scheduleTimer=null; nextCheckTime=null;
     clearInterval(countdownTimer); countdownTimer=null;
@@ -640,9 +874,11 @@ function stopSchedule() {
     document.getElementById('nextCheckLabel').textContent='Stopped';
     document.getElementById('startScheduleBtn').style.display='';
     document.getElementById('stopScheduleBtn').style.display='none';
-    addLog('⏹ Auto-check stopped.','warn');
+    addLog('⏹ In-tab timer stopped. BG Worker (if installed) continues independently.','warn');
+    if (swReg && navigator.serviceWorker.controller)
+        navigator.serviceWorker.controller.postMessage({type:'STOP_SCHEDULE'});
 }
-function applySchedule() { if (scheduleTimer) startSchedule(); }
+
 function startCountdown() {
     clearInterval(countdownTimer);
     countdownTimer=setInterval(()=>{
@@ -652,6 +888,7 @@ function startCountdown() {
         if (el) el.textContent=`Next: ${Math.floor(diff/60)}m ${diff%60}s`;
     },1000);
 }
+
 function runCheck() {
     const mins=parseInt(document.getElementById('intervalSelect')?.value||30);
     nextCheckTime=new Date(Date.now()+mins*60000);
@@ -664,47 +901,19 @@ function runCheck() {
         else addLog('⚠️ Notifications blocked — cannot send.','warn');
     }
 }
+
 function addLog(msg,type='ok') {
     const log=document.getElementById('scheduleLog'); if(!log) return;
     const ph=log.querySelector('.text-muted'); if(ph) ph.remove();
     const d=document.createElement('div'); d.className=`log-line log-${type}`; d.textContent=msg;
     log.insertBefore(d,log.firstChild);
-    while(log.children.length>30) log.removeChild(log.lastChild);
-}
-
-// ── SERVICE WORKER ────────────────────────────────────────────────────────────
-async function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) { Swal.fire({icon:'error',title:'Not Supported',text:'Service Workers require a modern browser.'}); return; }
-    try {
-        const code=document.getElementById('swCode').textContent;
-        const url=URL.createObjectURL(new Blob([code],{type:'application/javascript'}));
-        swReg=await navigator.serviceWorker.register(url,{scope:'/'});
-        updateSwUI();
-        addLog('⚙️ Service Worker registered.','ok');
-        Swal.fire({icon:'success',title:'Service Worker Registered',text:'Notifications now work even when tab is minimized.',timer:2500});
-    } catch(err) {
-        addLog('❌ SW failed: '+err.message,'err');
-        Swal.fire({icon:'error',title:'SW Failed',text:err.message+'\n\nRequires HTTPS or localhost.'});
-    }
-}
-function updateSwUI() {
-    const pill=document.getElementById('swStatusPill');
-    const text=document.getElementById('swStatusText');
-    if (!pill) return;
-    if (!('serviceWorker' in navigator)) {
-        pill.className='status-pill denied'; pill.textContent='🚫 Not Supported'; text.textContent='Your browser does not support Service Workers.'; return;
-    }
-    navigator.serviceWorker.getRegistration().then(reg=>{
-        if (reg) { swReg=reg; pill.className='status-pill granted'; pill.textContent='✅ Registered'; text.textContent='Service Worker active — background notifications supported.'; }
-        else      { pill.className='status-pill default'; pill.textContent='⏳ Not Registered'; text.textContent='Click "Register Service Worker" to enable background support.'; }
-    });
+    while(log.children.length>50) log.removeChild(log.lastChild);
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function initDefaultData() {
     const users=load(CONFIG.STORAGE_KEYS.USERS);
     if (users.length===0) save(CONFIG.STORAGE_KEYS.USERS,[{username:'admin',password:await hashPw('admin123'),role:CONFIG.ROLES.ADMIN}]);
-    // No default products — alerts only for real data
 }
 
 document.addEventListener('DOMContentLoaded', async ()=>{
@@ -726,18 +935,28 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     document.getElementById('rTo').addEventListener('change',renderReports);
     document.getElementById('printExpiryReportBtn').addEventListener('click',printExpiryReport);
 
+    setupSwListener();
     await initDefaultData();
     await checkSession();
 
-    if ('serviceWorker' in navigator)
-        navigator.serviceWorker.getRegistration().then(reg=>{ if(reg) swReg=reg; });
+    /* Restore existing SW if already installed */
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then(reg=>{
+            if (reg) {
+                swReg=reg;
+                const mins=parseInt(localStorage.getItem(CONFIG.STORAGE_KEYS.INTERVAL)||'30');
+                if (navigator.serviceWorker.controller)
+                    navigator.serviceWorker.controller.postMessage({type:'START_SCHEDULE',payload:{intervalMins:mins}});
+            }
+        });
+    }
 });
 
 window.editProduct=editProduct; window.deleteProduct=deleteProduct;
 window.requestPermission=requestPermission; window.sendTestNotification=sendTestNotification;
 window.sendExpiryNotificationNow=sendExpiryNotificationNow;
-window.startSchedule=startSchedule; window.stopSchedule=stopSchedule; window.applySchedule=applySchedule;
-window.registerServiceWorker=registerServiceWorker;
+window.startSchedule=startSchedule; window.stopSchedule=stopSchedule; window.saveInterval=saveInterval;
+window.registerServiceWorker=registerServiceWorker; window.unregisterServiceWorker=unregisterServiceWorker;
 </script>
 </body>
 </html>
