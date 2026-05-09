@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Management System</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); background-attachment: fixed; min-height: 100vh; color: #333; }
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-box { background: white; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 400px; }
+        .login-box h2 { margin-bottom: 1.5rem; text-align: center; color: #667eea; }
+        .login-input { width: 100%; padding: 12px 15px; margin-bottom: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: all 0.3s; }
+        .login-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .login-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
+        .login-btn:hover { transform: translateY(-2px); }
+        .navbar { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 1rem 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; display: none; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+        .nav-brand { font-size: 1.4rem; font-weight: bold; color: #667eea; }
+        .nav-menu { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .nav-btn { padding: 8px 16px; border: none; background: #f0f0f0; border-radius: 8px; cursor: pointer; transition: all 0.3s; font-size: 14px; }
+        .nav-btn:hover { background: #667eea; color: white; }
+        .nav-btn.active { background: #667eea; color: white; }
+        .nav-right { margin-left: auto; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .user-info { font-weight: 500; color: #667eea; }
+        .unified-section { min-height: 100vh; padding: 2rem 1.5rem; display: none; }
+        .unified-section.active { display: block; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .stat { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .stat:hover { transform: translateY(-5px); }
+        .stat small { font-size: 0.85rem; color: #6c757d; }
+        .stat div { font-size: 1.8rem; font-weight: bold; color: #667eea; margin-top: 0.5rem; }
+        .card-modern { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 1rem; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #e0e0e0; }
+        .table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
+        .btn-accent { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        .btn-accent:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .btn-danger { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .btn-success { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .btn-sm { padding: 4px 8px; font-size: 0.85rem; }
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .form-select { padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .mt-3 { margin-top: 1rem; } .mb-3 { margin-bottom: 1rem; }
+        .d-flex { display: flex; } .d-none { display: none !important; }
+        .w-100 { width: 100%; } .w-auto { width: auto; }
+        .flex-wrap { flex-wrap: wrap; }
+        .align-items-center { align-items: center; }
+        .text-muted { color: #6c757d; }
+        .alert { padding: 12px; border-radius: 6px; margin-bottom: 1rem; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-danger  { background: #f8d7da; color: #721c24; border: 1px solid #dc3545; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .alert-info    { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .list-group { list-style: none; padding: 0; }
+        .list-group-item { padding: 12px; border: 1px solid #e0e0e0; border-bottom: none; background: white; }
+        .list-group-item:last-child  { border-bottom: 1px solid #e0e0e0; border-radius: 0 0 6px 6px; }
+        .list-group-item:first-child { border-radius: 6px 6px 0 0; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+        .bg-danger  { background: #dc3545; color: white; }
+        .bg-warning { background: #ffc107; color: #000; }
+        .bg-success { background: #28a745; color: white; }
+        .expired       { background-color: #f8d7da !important; }
+        .expiring-soon { background-color: #fff3cd !important; }
+        .table-warning { background-color: #fff3cd; }
+        .role-admin { display: none; }
+
+        /* ── Notification Panel ── */
+        .notif-panel { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 1rem; border-left: 5px solid #667eea; }
+        .notif-panel h6 { color: #667eea; margin-bottom: 1rem; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .notif-panel.green-border { border-left-color: #28a745; }
+        .notif-panel.green-border h6 { color: #28a745; }
+        .notif-panel.purple-border { border-left-color: #764ba2; }
+        .notif-panel.purple-border h6 { color: #764ba2; }
+
+        .status-row  { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
+        .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+        .status-pill.granted { background: #d4edda; color: #155724; }
+        .status-pill.denied  { background: #f8d7da; color: #721c24; }
+        .status-pill.default { background: #fff3cd; color: #856404; }
+
+        .btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
+
+        /* Pulse dot */
+        .pulse-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+        .pulse-dot.green  { background: #28a745; animation: blink 1.4s infinite; }
+        .pulse-dot.red    { background: #dc3545; }
+        .pulse-dot.yellow { background: #ffc107; animation: blink 1.4s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* Log */
+        .schedule-log { background: #f8f9fa; border-radius: 6px; padding: 10px; font-family: monospace; font-size: 0.78rem; max-height: 160px; overflow-y: auto; margin-top: 10px; }
+        .log-line { padding: 2px 0; border-bottom: 1px solid #eee; }
+        .log-line:last-child { border: none; }
+        .log-ok   { color: #155724; }
+        .log-warn { color: #856404; }
+        .log-err  { color: #dc3545; }
+
+        .interval-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 0.75rem; }
+
+        @media (max-width: 768px) {
+            .unified-section { padding: 1rem 0.75rem; }
+            .nav-menu { flex-direction: column; width: 100%; margin-top: 1rem; }
+            .nav-btn  { width: 100%; }
+            .nav-right { margin-left: 0; margin-top: 1rem; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginContainer" class="login-container">
+    <div class="login-box">
+        <img src="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png" style="width:90%;height:auto;">
+        <h2>🔐 BAXNAANO LAB LOGIN</h2>
+        <input type="text"     id="loginUsername" class="login-input" placeholder="Username"  maxlength="50" autocomplete="username">
+        <input type="password" id="loginPassword" class="login-input" placeholder="Password" autocomplete="current-password">
+        <button id="loginBtn" class="login-btn">Login</button>
+        <div id="loginAlert" class="alert alert-danger d-none mt-3"></div>
+    </div>
+</div>
+
+<!-- NAVBAR -->
+<div id="navbar" class="navbar">
+    <img src="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png" style="width:32px;height:32px;object-fit:contain;">
+    <div class="nav-brand">🧪 Lab Management</div>
+    <div class="nav-menu" id="navMenu"></div>
+    <div class="nav-right">
+        <span class="user-info" id="userDisplay"></span>
+        <button class="btn-accent" id="logoutBtn">Logout</button>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboardView" class="unified-section">
+    <h6 class="mb-3"><i class="bi bi-speedometer2"></i> Lab Dashboard</h6>
+    <div id="expiredMedicineAlert" class="alert alert-danger d-none">
+        <strong>⚠️ EXPIRED ITEMS FOUND!</strong> Some lab items have expired.
+    </div>
+    <div class="card-modern mt-3">
+        <h6>⚠️ Stock &amp; Expiry Alerts</h6>
+        <div id="stockExpiryAlerts"></div>
+    </div>
+</div>
+
+<!-- PRODUCTS -->
+<div id="productsView" class="unified-section">
+    <h6 class="mb-3 role-admin"><i class="bi bi-pills"></i> Manage Products</h6>
+    <form id="productForm" class="row g-2 mb-3 role-admin">
+        <input type="hidden" id="editProductId">
+        <div class="col-md-3"><input id="pName"   class="form-control" placeholder="Test Name" required maxlength="100"></div>
+        <div class="col-md-1"><input id="pQty"    class="form-control" type="number" min="0" placeholder="Qty" required></div>
+        <div class="col-md-2"><input id="pExpiry" class="form-control" type="date" required></div>
+        <div class="col-md-1"><button class="btn-accent w-100" type="submit">Save</button></div>
+    </form>
+    <input id="filterProd" class="form-control mb-3" placeholder="🔍 Filter products...">
+    <div style="max-height:360px;overflow:auto">
+        <table class="table table-sm">
+            <thead><tr>
+                <th>Name</th><th>Qty</th><th>Expiry</th><th>Status</th>
+                <th class="role-admin">Action</th>
+            </tr></thead>
+            <tbody id="productsTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- REPORTS -->
+<div id="reportsView" class="unified-section">
+    <h6 class="mb-3"><i class="bi bi-calendar-check"></i> Lab Expiry Report</h6>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <div style="flex:1;min-width:280px;">
+            <div class="d-flex align-items-center flex-wrap mb-3" style="gap:0.5rem;">
+                <label>📅 Horizon:</label>
+                <select id="reportRange" class="form-select w-auto">
+                    <option value="next30">Next 30 days</option>
+                    <option value="next60">Next 60 days</option>
+                    <option value="next90">Next 90 days</option>
+                    <option value="all">All items</option>
+                    <option value="custom">Custom</option>
+                </select>
+                <input type="date" id="rFrom" style="display:none">
+                <input type="date" id="rTo"   style="display:none">
+                <button class="btn-accent" id="printExpiryReportBtn">🖨️ Print</button>
+            </div>
+            <div class="stat mb-3"><small class="text-muted">Expiring Items</small><div id="repTotal">0</div></div>
+            <div class="stat mb-3"><small class="text-muted">Expired Items</small> <div id="repExpired">0</div></div>
+            <h6>⚠️ Expiry Alerts</h6>
+            <div id="repItems" style="max-height:260px;overflow:auto"></div>
+        </div>
+        <div style="flex:1;min-width:280px;">
+            <h6>📋 Expiring Inventory</h6>
+            <div style="max-height:360px;overflow:auto">
+                <table class="table table-sm">
+                    <thead><tr><th>Name</th><th>Qty</th><th>Expiry</th><th>Status</th></tr></thead>
+                    <tbody id="recentSalesTbl"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NOTIFICATIONS SETTINGS -->
+<div id="notificationsView" class="unified-section">
+    <h6 class="mb-3"><i class="bi bi-bell-fill"></i> Browser Push Notifications</h6>
+
+    <div class="alert alert-info mb-3">
+        <strong>ℹ️ Sida u shaqeyso:</strong><br>
+        Browser-ku wuxuu kuu soo diri doonaa <strong>desktop / phone notification</strong> markay lab items dhammaanayaan ama dhammaadeen —
+        xitaa tab-ka kale joogtid, browser-ka oo kaliya u baahan.<br>
+        <em>✅ Chrome (Windows/Android/Mac) — full support &nbsp;|&nbsp; ✅ Firefox — supported &nbsp;|&nbsp; ⚠️ iOS Safari — limited</em>
+    </div>
+
+    <!-- 1. PERMISSION -->
+    <div class="notif-panel">
+        <h6>🔔 Step 1 — Enable Notifications</h6>
+        <div class="status-row">
+            <span id="permStatusPill" class="status-pill default">⏳ Checking…</span>
+            <span id="permStatusText" style="font-size:0.85rem;color:#555;"></span>
+        </div>
+        <div class="btn-row">
+            <button class="btn-accent"  id="requestPermBtn"  onclick="requestPermission()">🔔 Enable Notifications</button>
+            <button class="btn-success"                       onclick="sendTestNotification()">📤 Send Test Notification</button>
+            <button class="btn-accent"                        onclick="sendExpiryNotificationNow()">🚨 Check &amp; Notify Now</button>
+        </div>
+    </div>
+
+    <!-- 2. AUTO SCHEDULE -->
+    <div class="notif-panel green-border">
+        <h6>
+            <span class="pulse-dot red" id="scheduleDot"></span>
+            &nbsp;Step 2 — Auto-Check Schedule
+        </h6>
+        <p style="font-size:0.85rem;color:#555;margin-bottom:0.75rem;">
+            System-ku si toos ah u xaraynayaa expiry alerts oo u dira notification —
+            browser-ka oo kaliya u baahan (tab-ka background-ka ku jiri karo).
+        </p>
+
+        <div class="interval-row">
+            <label style="font-weight:600;font-size:0.9rem;">Check every:</label>
+            <select id="intervalSelect" class="form-select w-auto" onchange="applySchedule()">
+                <option value="15">15 minutes</option>
+                <option value="30" selected>30 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="120">2 hours</option>
+                <option value="360">6 hours</option>
+            </select>
+            <span id="nextCheckLabel" style="font-size:0.82rem;color:#667eea;font-weight:600;"></span>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn-success" id="startScheduleBtn" onclick="startSchedule()">▶ Start Auto-Check</button>
+            <button class="btn-danger"  id="stopScheduleBtn"  onclick="stopSchedule()" style="display:none">⏹ Stop</button>
+        </div>
+
+        <div class="schedule-log" id="scheduleLog">
+            <div class="log-line text-muted">— No checks run yet —</div>
+        </div>
+    </div>
+
+    <!-- 3. SERVICE WORKER -->
+    <div class="notif-panel purple-border">
+        <h6>⚙️ Step 3 — Service Worker (Background Support)</h6>
+        <p style="font-size:0.85rem;color:#555;margin-bottom:0.75rem;">
+            Service Worker wuxuu kuu ogolaan karaa notifications xitaa tab-ka yar yahay ama browser minimized yahay.
+            Waxay u baahan tahay <strong>HTTPS</strong> ama <strong>localhost</strong>.
+        </p>
+        <div class="status-row">
+            <span id="swStatusPill" class="status-pill default">⏳ Checking…</span>
+            <span id="swStatusText" style="font-size:0.82rem;color:#555;"></span>
+        </div>
+        <div class="btn-row">
+            <button class="btn-accent" onclick="registerServiceWorker()">⚙️ Register Service Worker</button>
+        </div>
+    </div>
+</div>
+
+<!-- INLINE SW CODE -->
+<script id="swCode" type="text/sw-source">
+self.addEventListener('install',  () => self.skipWaiting());
+self.addEventListener('activate', e  => e.waitUntil(clients.claim()));
+self.addEventListener('message',  event => {
+    const { type, payload } = event.data || {};
+    if (type !== 'CHECK_EXPIRY') return;
+    const { expired, expiring } = payload;
+    if (expired.length === 0 && expiring.length === 0) return;
+    const title = expired.length > 0
+        ? `\u274C ${expired.length} item(s) EXPIRED \u2014 Baxnaano Lab`
+        : `\u26A0\uFE0F ${expiring.length} item(s) expiring soon \u2014 Baxnaano Lab`;
+    const lines = [
+        ...expired.map(p  => `\u274C ${p.name} \u2014 expired ${p.expiry}`),
+        ...expiring.map(p => `\u26A0\uFE0F ${p.name} \u2014 expires ${p.expiry}`)
+    ];
+    const body = lines.slice(0,5).join('\n') + (lines.length>5 ? `\n\u2026and ${lines.length-5} more` : '');
+    self.registration.showNotification(title, {
+        body,
+        icon: 'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png',
+        badge:'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png',
+        tag: 'lab-expiry', renotify: true, requireInteraction: true
+    });
+});
+</script>
+
+<script>
+'use strict';
+
+const CONFIG = {
+    STORAGE_KEYS: {
+        USERS:    'pharma_users_final_v1',
+        PRODUCTS: 'pharma_products_final_v1',
+        SESSION:  'pharma_session_final_v1',
+        INTERVAL: 'lab_notif_interval'
+    },
+    ROLES: { ADMIN: 'admin', CASHIER: 'cashier' }
+};
+
+let currentUser    = null;
+let scheduleTimer  = null;
+let countdownTimer = null;
+let nextCheckTime  = null;
+let swReg          = null;
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function sanitize(text, max=500) {
+    if (typeof text !== 'string') return '';
+    return text.replace(/[<>"'&]/g, c =>
+        ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;','&':'&amp;'}[c])
+    ).substring(0,max).trim();
+}
+async function hashPw(pw) {
+    try {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw+'pharma_salt_secure_2024'));
+        return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    } catch { return btoa(pw.split('').reverse().join('')); }
+}
+function load(key, def=[]) { try { const d=localStorage.getItem(key); return d?JSON.parse(d):def; } catch { return def; } }
+function save(key, data)   { try { localStorage.setItem(key,JSON.stringify(data)); return true; } catch(e) { console.error(e); return false; } }
+function isExpired(d)      { const t=new Date(); t.setHours(0,0,0,0); return new Date(d)<t; }
+function isExpiring(d)     { const t=new Date(); t.setHours(0,0,0,0); const s=new Date(t.getTime()+30*864e5); const e=new Date(d); return e>=t&&e<=s; }
+function gid(p)            { return `${p}_${Date.now()}_${Math.random().toString(36).substr(2,9)}`; }
+function debounce(fn,w)    { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),w); }; }
+
+function getAlerts() {
+    const products = load(CONFIG.STORAGE_KEYS.PRODUCTS);
+    return {
+        expired:  products.filter(p=>isExpired(p.expiry) ).map(p=>({name:p.name,expiry:new Date(p.expiry).toLocaleDateString()})),
+        expiring: products.filter(p=>isExpiring(p.expiry)).map(p=>({name:p.name,expiry:new Date(p.expiry).toLocaleDateString()}))
+    };
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+async function checkSession() {
+    const sess = localStorage.getItem(CONFIG.STORAGE_KEYS.SESSION);
+    if (sess) {
+        currentUser = load(CONFIG.STORAGE_KEYS.USERS).find(u=>u.username===sess)||null;
+        if (currentUser) { showApp(); return; }
+    }
+    showLogin();
+}
+function showLogin() {
+    document.getElementById('loginContainer').style.display='flex';
+    document.getElementById('navbar').style.display='none';
+}
+function showApp() {
+    document.getElementById('loginContainer').style.display='none';
+    document.getElementById('navbar').style.display='flex';
+    document.getElementById('userDisplay').textContent=`👤 ${currentUser.username} (${currentUser.role})`;
+    setupNav();
+    applyRoles();
+    if (currentUser.role===CONFIG.ROLES.CASHIER) showView('reports'); else showView('dashboard');
+    autoNotifyOnLogin();
+}
+async function handleLogin() {
+    const u=document.getElementById('loginUsername').value.trim();
+    const p=document.getElementById('loginPassword').value;
+    if (!u||!p) { Swal.fire({icon:'warning',title:'Enter credentials',timer:1500}); return; }
+    const users=load(CONFIG.STORAGE_KEYS.USERS);
+    const user=users.find(x=>x.username===u);
+    if (!user) { Swal.fire({icon:'error',title:'Invalid credentials',timer:1500}); return; }
+    if (user.password===await hashPw(p)) {
+        currentUser=user;
+        localStorage.setItem(CONFIG.STORAGE_KEYS.SESSION,u);
+        showApp();
+        Swal.fire({icon:'success',title:'Login successful',timer:1200});
+    } else { Swal.fire({icon:'error',title:'Invalid credentials',timer:1500}); }
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function setupNav() {
+    const menu=document.getElementById('navMenu'); menu.innerHTML='';
+    const items = currentUser.role===CONFIG.ROLES.ADMIN
+        ? [{v:'dashboard',l:'📊 Dashboard'},{v:'products',l:'🧪 Products'},{v:'reports',l:'📋 Reports'},{v:'notifications',l:'🔔 Notifications'}]
+        : [{v:'reports',l:'📋 Reports'},{v:'notifications',l:'🔔 Notifications'}];
+    items.forEach(it=>{
+        const b=document.createElement('button');
+        b.className='nav-btn'; b.dataset.view=it.v; b.textContent=it.l;
+        b.onclick=()=>showView(it.v); menu.appendChild(b);
+    });
+    if (menu.firstChild) menu.firstChild.classList.add('active');
+}
+function applyRoles() {
+    document.querySelectorAll('.role-admin').forEach(el=>{
+        el.style.display=currentUser.role===CONFIG.ROLES.ADMIN?'block':'none';
+    });
+}
+function showView(name) {
+    document.querySelectorAll('.unified-section').forEach(el=>el.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    const t=document.getElementById(name+'View');
+    const b=document.querySelector(`[data-view="${name}"]`);
+    if (t) t.classList.add('active');
+    if (b) b.classList.add('active');
+    applyRoles();
+    if (name==='dashboard')     renderDashboard();
+    if (name==='products')      renderProducts();
+    if (name==='reports')       renderReports();
+    if (name==='notifications') renderNotifSettings();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function renderDashboard() {
+    if (currentUser.role!==CONFIG.ROLES.ADMIN) { showView('reports'); return; }
+    const products=load(CONFIG.STORAGE_KEYS.PRODUCTS);
+    document.getElementById('expiredMedicineAlert').classList.toggle('d-none', products.filter(p=>isExpired(p.expiry)).length===0);
+    const box=document.getElementById('stockExpiryAlerts'); box.innerHTML='';
+    const frag=document.createDocumentFragment(); let count=0;
+    products.filter(p=>isExpired(p.expiry)).forEach(p=>{ const d=document.createElement('div'); d.className='alert alert-danger'; d.innerHTML=`<strong>❌ EXPIRED:</strong> ${sanitize(p.name)} (${new Date(p.expiry).toLocaleDateString()})`; frag.appendChild(d); count++; });
+    products.filter(p=>isExpiring(p.expiry)).forEach(p=>{ const d=document.createElement('div'); d.className='alert alert-warning'; d.innerHTML=`<strong>⚠️ Expiring Soon:</strong> ${sanitize(p.name)} (${new Date(p.expiry).toLocaleDateString()})`; frag.appendChild(d); count++; });
+    if (count===0) box.innerHTML='<p class="text-muted">✅ No alerts.</p>'; else box.appendChild(frag);
+}
+
+// ── PRODUCTS ──────────────────────────────────────────────────────────────────
+function renderProducts() {
+    if (currentUser.role!==CONFIG.ROLES.ADMIN) { showView('reports'); return; }
+    ['editProductId','pName','pQty','pExpiry','filterProd'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    renderProductsTable();
+}
+function renderProductsTable(filter='') {
+    const products=load(CONFIG.STORAGE_KEYS.PRODUCTS);
+    const list=filter?products.filter(p=>p.name.toLowerCase().includes(filter.toLowerCase())):products;
+    const tbody=document.getElementById('productsTable'); tbody.innerHTML='';
+    const frag=document.createDocumentFragment();
+    list.forEach(p=>{
+        const exp=isExpired(p.expiry), exp2=isExpiring(p.expiry);
+        const tr=document.createElement('tr');
+        tr.className=exp?'expired':exp2?'expiring-soon':'';
+        tr.innerHTML=`<td>${sanitize(p.name)} ${exp?'❌':exp2?'⚠️':''}</td><td>${p.qty}</td><td>${new Date(p.expiry).toLocaleDateString()}</td>
+        <td><span class="badge ${exp?'bg-danger':exp2?'bg-warning':'bg-success'}">${exp?'Expired':exp2?'Expiring':'Good'}</span></td>
+        <td class="role-admin"><button class="btn-accent btn-sm" onclick="editProduct('${p.id}')">Edit</button> <button class="btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Delete</button></td>`;
+        frag.appendChild(tr);
+    });
+    tbody.appendChild(frag);
+    applyRoles();
+}
+function handleProductSubmit(e) {
+    if (currentUser.role!==CONFIG.ROLES.ADMIN) { Swal.fire({icon:'error',title:'Access denied'}); return; }
+    e.preventDefault();
+    const id=document.getElementById('editProductId').value;
+    const obj={name:sanitize(document.getElementById('pName').value,100),qty:parseInt(document.getElementById('pQty').value),expiry:document.getElementById('pExpiry').value};
+    if (!obj.name||obj.qty<0||!obj.expiry) { Swal.fire({icon:'warning',title:'Fill all fields'}); return; }
+    const products=load(CONFIG.STORAGE_KEYS.PRODUCTS);
+    if (id) { const i=products.findIndex(p=>p.id===id); if(i!==-1) products[i]={...products[i],...obj}; }
+    else products.push({...obj,id:gid('PROD'),price:0,cost:0});
+    if (save(CONFIG.STORAGE_KEYS.PRODUCTS,products)) { Swal.fire({icon:'success',title:'Saved',timer:1200}); renderProducts(); }
+}
+function editProduct(id) {
+    if (currentUser.role!==CONFIG.ROLES.ADMIN) return;
+    const p=load(CONFIG.STORAGE_KEYS.PRODUCTS).find(p=>p.id===id); if(!p) return;
+    document.getElementById('editProductId').value=p.id;
+    document.getElementById('pName').value=p.name;
+    document.getElementById('pQty').value=p.qty;
+    document.getElementById('pExpiry').value=p.expiry;
+}
+function deleteProduct(id) {
+    if (currentUser.role!==CONFIG.ROLES.ADMIN) return;
+    Swal.fire({title:'Delete product?',icon:'warning',showCancelButton:true}).then(r=>{
+        if (!r.isConfirmed) return;
+        if (save(CONFIG.STORAGE_KEYS.PRODUCTS,load(CONFIG.STORAGE_KEYS.PRODUCTS).filter(p=>p.id!==id)))
+            { Swal.fire({icon:'success',title:'Deleted',timer:1200}); renderProducts(); }
+    });
+}
+
+// ── REPORTS ───────────────────────────────────────────────────────────────────
+function handleReportRangeChange() {
+    const v=document.getElementById('reportRange').value;
+    document.getElementById('rFrom').style.display=v==='custom'?'inline-block':'none';
+    document.getElementById('rTo').style.display  =v==='custom'?'inline-block':'none';
+    renderReports();
+}
+function renderReports() {
+    const range=document.getElementById('reportRange').value;
+    let from=null,to=null;
+    const today=new Date(); today.setHours(0,0,0,0);
+    if (range==='next30'){from=today;to=new Date(today.getTime()+30*864e5);}
+    else if(range==='next60'){from=today;to=new Date(today.getTime()+60*864e5);}
+    else if(range==='next90'){from=today;to=new Date(today.getTime()+90*864e5);}
+    else if(range==='custom'){
+        const f=document.getElementById('rFrom').value,t=document.getElementById('rTo').value;
+        if(f){from=new Date(f);from.setHours(0,0,0,0);}
+        if(t){to=new Date(t);to.setHours(23,59,59,999);}
+    }
+    const products=load(CONFIG.STORAGE_KEYS.PRODUCTS);
+    const expiring=products.filter(p=>{ if(isExpired(p.expiry)) return false; const e=new Date(p.expiry); if(from&&e<from) return false; if(to&&e>to) return false; return true; });
+    const expired =products.filter(p=>isExpired(p.expiry));
+    document.getElementById('repTotal').textContent  =expiring.length;
+    document.getElementById('repExpired').textContent=expired.length;
+    const ri=document.getElementById('repItems'); ri.innerHTML='';
+    if(expired.length===0&&expiring.length===0){ ri.innerHTML='<p class="text-muted">No alerts in this range.</p>'; }
+    else {
+        const ul=document.createElement('ul'); ul.className='list-group';
+        expired.forEach(p=>{ const li=document.createElement('li'); li.className='list-group-item alert-danger'; li.innerHTML=`<strong>❌ Expired:</strong> ${sanitize(p.name)} — ${new Date(p.expiry).toLocaleDateString()} (Qty:${p.qty})`; ul.appendChild(li); });
+        expiring.forEach(p=>{ const li=document.createElement('li'); li.className='list-group-item alert-warning'; li.innerHTML=`<strong>⚠️ Expiring:</strong> ${sanitize(p.name)} — ${new Date(p.expiry).toLocaleDateString()} (Qty:${p.qty})`; ul.appendChild(li); });
+        ri.appendChild(ul);
+    }
+    const tbl=document.getElementById('recentSalesTbl'); tbl.innerHTML='';
+    const frag=document.createDocumentFragment();
+    expiring.concat(expired).sort((a,b)=>new Date(a.expiry)-new Date(b.expiry)).forEach(p=>{
+        const tr=document.createElement('tr'); tr.className=isExpired(p.expiry)?'table-warning':'';
+        tr.innerHTML=`<td>${sanitize(p.name)}</td><td>${p.qty}</td><td>${new Date(p.expiry).toLocaleDateString()}</td><td>${isExpired(p.expiry)?'Expired':'Expiring'}</td>`;
+        frag.appendChild(tr);
+    });
+    tbl.appendChild(frag);
+}
+function printExpiryReport() {
+    const label=document.querySelector('#reportRange option:checked').textContent;
+    const w=window.open('','_blank');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Expiry Report</title>
+    <style>body{font-family:Arial;padding:20px}.alert-danger{background:#f8d7da;padding:10px;border-radius:8px;margin-bottom:8px}.alert-warning{background:#fff3cd;padding:10px;border-radius:8px;margin-bottom:8px}@media print{button{display:none}}</style></head>
+    <body><h1>Lab Expiry Report</h1><p><strong>Range:</strong> ${label}</p><p><strong>Expiring:</strong> ${document.getElementById('repTotal').textContent} | <strong>Expired:</strong> ${document.getElementById('repExpired').textContent}</p>
+    <h2>Alerts</h2>${document.getElementById('repItems').innerHTML}<button onclick="window.print()">Print</button></body></html>`);
+    w.document.close();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  BROWSER PUSH NOTIFICATIONS
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function requestPermission() {
+    if (!('Notification' in window)) { Swal.fire({icon:'error',title:'Not supported in this browser'}); return; }
+    const result = await Notification.requestPermission();
+    updatePermUI();
+    if (result==='granted') Swal.fire({icon:'success',title:'✅ Notifications Enabled!',timer:2000});
+    else Swal.fire({icon:'warning',title:'Permission Denied',text:'Go to browser site settings and allow notifications manually.'});
+}
+
+function updatePermUI() {
+    const pill=document.getElementById('permStatusPill');
+    const text=document.getElementById('permStatusText');
+    const btn =document.getElementById('requestPermBtn');
+    if (!pill) return;
+    const perm=('Notification' in window)?Notification.permission:'unsupported';
+    if (perm==='granted') {
+        pill.className='status-pill granted'; pill.textContent='✅ Granted';
+        text.textContent='Notifications enabled. You will receive expiry alerts.';
+        if (btn) btn.style.display='none';
+    } else if (perm==='denied') {
+        pill.className='status-pill denied'; pill.textContent='❌ Blocked';
+        text.textContent='Blocked. Open browser site settings → allow notifications for this page.';
+        if (btn) btn.style.display='';
+    } else if (perm==='unsupported') {
+        pill.className='status-pill denied'; pill.textContent='🚫 Not Supported';
+        text.textContent='This browser does not support notifications.';
+        if (btn) btn.style.display='none';
+    } else {
+        pill.className='status-pill default'; pill.textContent='⏳ Not Set';
+        text.textContent='Click "Enable Notifications" to allow expiry alerts.';
+        if (btn) btn.style.display='';
+    }
+}
+
+function fireNotif(title, body, tag='lab-alert') {
+    if (!('Notification' in window)||Notification.permission!=='granted') return false;
+    const opts={body,icon:'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png',badge:'https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png',tag,renotify:true,requireInteraction:true};
+    if (swReg) swReg.showNotification(title,opts);
+    else new Notification(title,opts);
+    return true;
+}
+
+function sendTestNotification() {
+    if (Notification.permission!=='granted') { Swal.fire({icon:'warning',title:'Enable notifications first',timer:1800}); return; }
+    fireNotif('🧪 Baxnaano Lab — Test','Notifications are working! Expiry alerts will appear here.','lab-test');
+    addLog('✅ Test notification sent.','ok');
+}
+
+function sendExpiryNotificationNow() {
+    const {expired,expiring}=getAlerts();
+    if (expired.length===0&&expiring.length===0) {
+        addLog('✅ Check done — no alerts.','ok');
+        Swal.fire({icon:'success',title:'✅ All Clear',text:'No expiring or expired items.',timer:2000});
+        return;
+    }
+    if (Notification.permission!=='granted') {
+        Swal.fire({icon:'warning',title:'Notifications not enabled',text:'Enable them in the Notifications tab first.'});
+        return;
+    }
+    const lines=[...expired.map(p=>`❌ ${p.name} — expired ${p.expiry}`),...expiring.map(p=>`⚠️ ${p.name} — expires ${p.expiry}`)];
+    const title=expired.length>0?`❌ ${expired.length} EXPIRED — Baxnaano Lab`:`⚠️ ${expiring.length} expiring soon — Baxnaano Lab`;
+    const body=lines.slice(0,5).join('\n')+(lines.length>5?`\n…and ${lines.length-5} more`:'');
+    fireNotif(title,body,'lab-expiry');
+    addLog(`🚨 Sent: ${expired.length} expired, ${expiring.length} expiring.`,expired.length>0?'err':'warn');
+    // Also post to SW
+    if (swReg&&navigator.serviceWorker.controller)
+        navigator.serviceWorker.controller.postMessage({type:'CHECK_EXPIRY',payload:{expired,expiring}});
+}
+
+async function autoNotifyOnLogin() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission==='granted') {
+        setTimeout(()=>{ const a=getAlerts(); if(a.expired.length>0||a.expiring.length>0) sendExpiryNotificationNow(); },1500);
+        return;
+    }
+    if (Notification.permission==='default') {
+        const {isConfirmed}=await Swal.fire({icon:'info',title:'🔔 Enable Notifications?',text:'Get alerts when lab items are expired or expiring — even in the background.',showCancelButton:true,confirmButtonText:'Enable',cancelButtonText:'Later'});
+        if (isConfirmed) await requestPermission();
+    }
+}
+
+// ── AUTO SCHEDULE ─────────────────────────────────────────────────────────────
+function renderNotifSettings() { updatePermUI(); updateSwUI(); const s=localStorage.getItem(CONFIG.STORAGE_KEYS.INTERVAL); if(s) document.getElementById('intervalSelect').value=s; }
+
+function startSchedule() {
+    if (scheduleTimer) clearInterval(scheduleTimer);
+    const mins=parseInt(document.getElementById('intervalSelect').value);
+    localStorage.setItem(CONFIG.STORAGE_KEYS.INTERVAL,mins);
+    scheduleTimer=setInterval(runCheck,mins*60000);
+    nextCheckTime=new Date(Date.now()+mins*60000);
+    document.getElementById('scheduleDot').className='pulse-dot green';
+    document.getElementById('startScheduleBtn').style.display='none';
+    document.getElementById('stopScheduleBtn').style.display='';
+    addLog(`▶ Auto-check started — every ${mins} min.`,'ok');
+    runCheck();
+    startCountdown();
+}
+function stopSchedule() {
+    clearInterval(scheduleTimer); scheduleTimer=null; nextCheckTime=null;
+    clearInterval(countdownTimer); countdownTimer=null;
+    document.getElementById('scheduleDot').className='pulse-dot red';
+    document.getElementById('nextCheckLabel').textContent='Stopped';
+    document.getElementById('startScheduleBtn').style.display='';
+    document.getElementById('stopScheduleBtn').style.display='none';
+    addLog('⏹ Auto-check stopped.','warn');
+}
+function applySchedule() { if (scheduleTimer) startSchedule(); }
+function startCountdown() {
+    clearInterval(countdownTimer);
+    countdownTimer=setInterval(()=>{
+        if (!nextCheckTime) return;
+        const diff=Math.max(0,Math.round((nextCheckTime-Date.now())/1000));
+        const el=document.getElementById('nextCheckLabel');
+        if (el) el.textContent=`Next: ${Math.floor(diff/60)}m ${diff%60}s`;
+    },1000);
+}
+function runCheck() {
+    const mins=parseInt(document.getElementById('intervalSelect')?.value||30);
+    nextCheckTime=new Date(Date.now()+mins*60000);
+    const {expired,expiring}=getAlerts();
+    const time=new Date().toLocaleTimeString();
+    if (expired.length===0&&expiring.length===0) addLog(`[${time}] ✅ All clear — no alerts.`,'ok');
+    else {
+        addLog(`[${time}] 🚨 ${expired.length} expired, ${expiring.length} expiring.`,expired.length>0?'err':'warn');
+        if (Notification.permission==='granted') sendExpiryNotificationNow();
+        else addLog('⚠️ Notifications blocked — cannot send.','warn');
+    }
+}
+function addLog(msg,type='ok') {
+    const log=document.getElementById('scheduleLog'); if(!log) return;
+    const ph=log.querySelector('.text-muted'); if(ph) ph.remove();
+    const d=document.createElement('div'); d.className=`log-line log-${type}`; d.textContent=msg;
+    log.insertBefore(d,log.firstChild);
+    while(log.children.length>30) log.removeChild(log.lastChild);
+}
+
+// ── SERVICE WORKER ────────────────────────────────────────────────────────────
+async function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) { Swal.fire({icon:'error',title:'Not Supported',text:'Service Workers require a modern browser.'}); return; }
+    try {
+        const code=document.getElementById('swCode').textContent;
+        const url=URL.createObjectURL(new Blob([code],{type:'application/javascript'}));
+        swReg=await navigator.serviceWorker.register(url,{scope:'/'});
+        updateSwUI();
+        addLog('⚙️ Service Worker registered.','ok');
+        Swal.fire({icon:'success',title:'Service Worker Registered',text:'Notifications now work even when tab is minimized.',timer:2500});
+    } catch(err) {
+        addLog('❌ SW failed: '+err.message,'err');
+        Swal.fire({icon:'error',title:'SW Failed',text:err.message+'\n\nRequires HTTPS or localhost.'});
+    }
+}
+function updateSwUI() {
+    const pill=document.getElementById('swStatusPill');
+    const text=document.getElementById('swStatusText');
+    if (!pill) return;
+    if (!('serviceWorker' in navigator)) {
+        pill.className='status-pill denied'; pill.textContent='🚫 Not Supported'; text.textContent='Your browser does not support Service Workers.'; return;
+    }
+    navigator.serviceWorker.getRegistration().then(reg=>{
+        if (reg) { swReg=reg; pill.className='status-pill granted'; pill.textContent='✅ Registered'; text.textContent='Service Worker active — background notifications supported.'; }
+        else      { pill.className='status-pill default'; pill.textContent='⏳ Not Registered'; text.textContent='Click "Register Service Worker" to enable background support.'; }
+    });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function initDefaultData() {
+    const users=load(CONFIG.STORAGE_KEYS.USERS);
+    if (users.length===0) save(CONFIG.STORAGE_KEYS.USERS,[{username:'admin',password:await hashPw('admin123'),role:CONFIG.ROLES.ADMIN}]);
+    // No default products — alerts only for real data
+}
+
+document.addEventListener('DOMContentLoaded', async ()=>{
+    document.getElementById('loginBtn').addEventListener('click',handleLogin);
+    document.getElementById('loginUsername').addEventListener('keypress',e=>{ if(e.key==='Enter') document.getElementById('loginPassword').focus(); });
+    document.getElementById('loginPassword').addEventListener('keypress',e=>{ if(e.key==='Enter') handleLogin(); });
+    document.getElementById('logoutBtn').addEventListener('click',()=>{
+        Swal.fire({title:'Logout?',icon:'question',showCancelButton:true}).then(r=>{
+            if (!r.isConfirmed) return;
+            clearInterval(scheduleTimer); clearInterval(countdownTimer);
+            localStorage.removeItem(CONFIG.STORAGE_KEYS.SESSION);
+            currentUser=null; showLogin();
+        });
+    });
+    document.getElementById('productForm')?.addEventListener('submit',handleProductSubmit);
+    document.getElementById('filterProd')?.addEventListener('input',debounce(()=>renderProductsTable(document.getElementById('filterProd').value),300));
+    document.getElementById('reportRange').addEventListener('change',handleReportRangeChange);
+    document.getElementById('rFrom').addEventListener('change',renderReports);
+    document.getElementById('rTo').addEventListener('change',renderReports);
+    document.getElementById('printExpiryReportBtn').addEventListener('click',printExpiryReport);
+
+    await initDefaultData();
+    await checkSession();
+
+    if ('serviceWorker' in navigator)
+        navigator.serviceWorker.getRegistration().then(reg=>{ if(reg) swReg=reg; });
+});
+
+window.editProduct=editProduct; window.deleteProduct=deleteProduct;
+window.requestPermission=requestPermission; window.sendTestNotification=sendTestNotification;
+window.sendExpiryNotificationNow=sendExpiryNotificationNow;
+window.startSchedule=startSchedule; window.stopSchedule=stopSchedule; window.applySchedule=applySchedule;
+window.registerServiceWorker=registerServiceWorker;
+</script>
+</body>
+</html>
