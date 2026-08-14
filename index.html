@@ -1,330 +1,299 @@
-<!DOCTYPE html>
-<html lang="so">
+<!doctype html>
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Electronic Card Generator</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Card Scanner Demo</title>
 
-<!-- html2canvas library si loo soo dejiyo sawirka card-ka -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Barcode/QR scanner -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-<style>
-*{
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+  <!-- Barcode generator -->
+  <script src="https://cdn.jsdelivr.net/npm/bwip-js@4.5.1/dist/bwip-js-min.js"></script>
 
-body{
-    background: #0f172a;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-.wrapper{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-
-.card{
-    width: 380px;
-    height: 230px;
-    border-radius: 20px;
-    padding: 22px;
-    color: white;
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(135deg, #071b35, #0b4260 50%, #081523);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-/* Electronic futuristic lines */
-.card::before,
-.card::after{
-    content: "";
-    position: absolute;
-    border: 1px solid rgba(0, 220, 255, 0.25);
-    border-radius: 50%;
-}
-
-.card::before{
-    width: 300px;
-    height: 300px;
-    right: -130px;
-    top: -170px;
-}
-
-.card::after{
-    width: 250px;
-    height: 250px;
-    left: -150px;
-    bottom: -170px;
-}
-
-.header{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    z-index: 2;
-}
-
-.logo{
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    background: linear-gradient(45deg, #00d2ff, #3a7bd5);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.power{
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1px;
-}
-
-.power-dot{
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #00ff88;
-    box-shadow: 0 0 12px #00ff88;
-    animation: pulse 1.2s infinite;
-}
-
-@keyframes pulse{
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
+  <style>
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      margin: 16px;
+      background: #111;
+      color: #fff;
     }
-    50%{
-        opacity: 0.35;
-        transform: scale(0.7);
+
+    h2 {
+      margin-top: 0;
     }
-}
 
-.chip{
-    width: 48px;
-    height: 36px;
-    margin-top: 25px;
-    border-radius: 7px;
-    background: linear-gradient(135deg, #d6b45c, #fff1a8, #b88b27);
-    position: relative;
-    z-index: 2;
-}
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
 
-.chip::before,
-.chip::after{
-    content: "";
-    position: absolute;
-    background: #9b7824;
-}
+    button, select {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+    }
 
-.chip::before{
-    width: 100%;
-    height: 1px;
-    top: 18px;
-}
+    button {
+      background: #22c55e;
+      color: #08110a;
+      font-weight: 700;
+    }
 
-.chip::after{
-    width: 1px;
-    height: 100%;
-    left: 24px;
-}
+    button:disabled {
+      opacity: 0.5;
+    }
 
-.info{
-    position: absolute;
-    left: 22px;
-    bottom: 22px;
-    z-index: 2;
-    max-width: 250px;
-}
+    #stop {
+      background: #ef4444;
+      color: white;
+    }
 
-.name{
-    font-size: 16px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+    #reader {
+      width: 100%;
+      max-width: 700px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+    }
 
-.id{
-    margin-top: 5px;
-    font-size: 12px;
-    opacity: 0.85;
-    letter-spacing: 2px;
-    color: #00d2ff;
-}
+    #output {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 12px;
+      background: #181818;
+      max-width: 700px;
+    }
 
-.qr{
-    position: absolute;
-    right: 22px;
-    bottom: 22px;
-    width: 65px;
-    height: 65px;
-    background: white;
-    padding: 4px;
-    border-radius: 6px;
-    z-index: 3;
-}
+    canvas {
+      background: white;
+      border-radius: 12px;
+      max-width: 100%;
+      margin-top: 12px;
+    }
 
-/* Controls Box */
-.controls{
-    background: #1e293b;
-    padding: 24px;
-    border-radius: 15px;
-    width: 380px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.05);
-}
-
-.controls input{
-    width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 12px;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    outline: none;
-    background: #0f172a;
-    color: white;
-    font-size: 14px;
-    transition: 0.3s;
-}
-
-.controls input:focus{
-    border-color: #00a8ff;
-}
-
-.btn-group{
-    display: flex;
-    gap: 10px;
-}
-
-button{
-    flex: 1;
-    padding: 12px;
-    border: 0;
-    border-radius: 8px;
-    background: #00a8ff;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-button:hover{
-    background: #008bd1;
-}
-
-button.download-btn{
-    background: #10b981;
-}
-
-button.download-btn:hover{
-    background: #059669;
-}
-</style>
+    .small {
+      color: #aaa;
+      font-size: 13px;
+      word-break: break-word;
+    }
+  </style>
 </head>
 
 <body>
+  <h2>Camera Card Scanner Demo</h2>
 
-<div class="wrapper">
+  <div class="row" id="controls">
+    <select id="camera"></select>
+    <button id="start">Start Camera</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
 
-    <!-- CARD -->
-    <div class="card" id="cardElement">
-        <div class="header">
-            <div class="logo">SMART CARD</div>
-            <div class="power">
-                <span class="power-dot"></span>
-                POWER
-            </div>
-        </div>
+  <div id="reader"></div>
 
-        <div class="chip"></div>
+  <div id="output" hidden>
+    <p><b>Detected format:</b> <span id="format"></span></p>
+    <p><b>Rendered as:</b> <span id="bcid"></span></p>
+    <p class="small"><b>Value:</b> <span id="value"></span></p>
 
-        <div class="info">
-            <div class="name" id="cardName">ISSE SHOOLE</div>
-            <div class="id" id="cardId">ID: SC-2026-001</div>
-        </div>
+    <canvas id="barcode"></canvas>
 
-        <img
-            id="qrCode"
-            class="qr"
-            src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=Name:%20ISSE%20SHOOLE%20|%20ID:%20SC-2026-001"
-            alt="QR Code"
-        >
-    </div>
+    <p class="small">
+      Turn screen brightness to maximum and present this code to the scanner.
+    </p>
 
-    <!-- CONTROLS -->
-    <div class="controls">
-        <input
-            id="nameInput"
-            type="text"
-            placeholder="Geli magaca..."
-            oninput="updateCard()"
-        >
+    <button id="again">Scan Again</button>
+  </div>
 
-        <input
-            id="idInput"
-            type="text"
-            placeholder="Geli Card ID..."
-            oninput="updateCard()"
-        >
+  <script>
+    let scanner = null;
+    let scanning = false;
 
-        <div class="btn-group">
-            <button onclick="updateCard()">SAMEE CARD</button>
-            <button class="download-btn" onclick="downloadCard()">DOWNLOAD</button>
-        </div>
-    </div>
+    const supportedFormats =
+      typeof Html5QrcodeSupportedFormats !== "undefined"
+        ? Object.values(Html5QrcodeSupportedFormats).filter(v => typeof v === "number")
+        : [];
 
-</div>
+    const formatMap = {
+      QRCODE: "qrcode",
+      CODE128: "code128",
+      CODE39: "code39",
+      CODE93: "code93",
+      EAN13: "ean13",
+      EAN8: "ean8",
+      UPCA: "upca",
+      UPCE: "upce",
+      DATAMATRIX: "datamatrix",
+      PDF417: "pdf417",
+      ITF: "interleaved2of5",
+      CODABAR: "codabar"
+    };
 
-<script>
-function updateCard() {
-    let nameVal = document.getElementById("nameInput").value.trim();
-    let idVal = document.getElementById("idInput").value.trim();
+    function normalizeFormat(name) {
+      return (name || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    }
 
-    // Qiimaha caadiga ah haddii la tirtiro meesha wax lagu qoro
-    let name = nameVal ? nameVal : "ISSE SHOOLE";
-    let id = idVal ? idVal : "SC-2026-001";
+    function getFormatName(decodedResult) {
+      try {
+        const f = decodedResult?.format;
+        if (!f) return "UNKNOWN";
+        if (typeof f === "string") return f;
+        return f.formatName || f.name || f.toString() || "UNKNOWN";
+      } catch {
+        return "UNKNOWN";
+      }
+    }
 
-    // Qoraalada Card-ka oo la cusbooneysiiyo
-    document.getElementById("cardName").textContent = name.toUpperCase();
-    document.getElementById("cardId").textContent = "ID: " + id;
+    function chooseBcid(formatName, text) {
+      const n = normalizeFormat(formatName);
 
-    // Cusbooneysiinta QR Code-ka
-    let qrData = encodeURIComponent(`Name: ${name} | ID: ${id}`);
-    document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
-}
+      if (formatMap[n]) return formatMap[n];
 
-// Shaqada lagu soo dejisanayo Card-ka oo sawir ah
-function downloadCard() {
-    const cardElement = document.getElementById('cardElement');
-    
-    html2canvas(cardElement, {
-        scale: 2, // Sawir tayo sare leh
-        backgroundColor: null
-    }).then(canvas => {
-        let link = document.createElement('a');
-        link.download = 'smart-card.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    });
-}
-</script>
+      if (n.includes("QR")) return "qrcode";
+      if (n.includes("128")) return "code128";
+      if (n.includes("39")) return "code39";
+      if (n.includes("93")) return "code93";
+      if (n.includes("EAN13")) return "ean13";
+      if (n.includes("EAN8")) return "ean8";
+      if (n.includes("UPC")) return "upca";
+      if (n.includes("PDF")) return "pdf417";
+      if (n.includes("DATA")) return "datamatrix";
 
+      if (/^https?:/i.test(text)) return "qrcode";
+
+      return "code128";
+    }
+
+    function render(text, formatName) {
+      document.getElementById("format").textContent = formatName;
+      document.getElementById("value").textContent = text;
+
+      const bcid = chooseBcid(formatName, text);
+      document.getElementById("bcid").textContent = bcid;
+
+      const canvas = document.getElementById("barcode");
+
+      const is2D = ["qrcode", "datamatrix", "pdf417", "azteccode"].includes(bcid);
+
+      const options = {
+        bcid,
+        text,
+        scale: is2D ? 4 : 3,
+        backgroundcolor: "FFFFFF",
+        padding: 10
+      };
+
+      if (!is2D) {
+        options.includetext = true;
+        options.textxalign = "center";
+        options.height = 18;
+      }
+
+      if (bcid === "qrcode") {
+        options.eclevel = "M";
+      }
+
+      try {
+        bwipjs.toCanvas(canvas, options);
+      } catch (e) {
+        alert("Could not render barcode: " + e.message);
+      }
+
+      document.getElementById("reader").hidden = true;
+      document.getElementById("controls").hidden = true;
+      document.getElementById("output").hidden = false;
+    }
+
+    async function start() {
+      if (scanning) return;
+
+      try {
+        document.getElementById("output").hidden = true;
+        document.getElementById("reader").hidden = false;
+        document.getElementById("controls").hidden = false;
+
+        if (scanner) {
+          try {
+            scanner.clear();
+          } catch {}
+        }
+
+        const cameras = await Html5Qrcode.getCameras();
+        const select = document.getElementById("camera");
+
+        if (select.options.length === 0) {
+          cameras.forEach((cam, i) => {
+            const opt = document.createElement("option");
+            opt.value = cam.id;
+            opt.textContent = cam.label || `Camera ${i + 1}`;
+            select.appendChild(opt);
+          });
+        }
+
+        scanner = new Html5Qrcode("reader", {
+          formatsToSupport: supportedFormats,
+          rememberLastUsedCamera: true
+        });
+
+        const cameraConfig = select.value
+          ? { deviceId: { exact: select.value } }
+          : { facingMode: "environment" };
+
+        await scanner.start(
+          cameraConfig,
+          {
+            fps: 10,
+            qrbox: { width: 340, height: 220 },
+            aspectRatio: 1.7778
+          },
+          async (decodedText, decodedResult) => {
+            try {
+              await scanner.stop();
+              scanning = false;
+
+              document.getElementById("start").disabled = false;
+              document.getElementById("stop").disabled = true;
+
+              render(decodedText, getFormatName(decodedResult));
+            } catch {}
+          },
+          () => {}
+        );
+
+        scanning = true;
+        document.getElementById("start").disabled = true;
+        document.getElementById("stop").disabled = false;
+      } catch (e) {
+        alert("Start failed: " + (e?.message || e));
+      }
+    }
+
+    async function stop() {
+      try {
+        if (scanner && scanning) {
+          await scanner.stop();
+          scanner.clear();
+        }
+
+        scanning = false;
+        document.getElementById("start").disabled = false;
+        document.getElementById("stop").disabled = true;
+      } catch {}
+    }
+
+    function scanAgain() {
+      document.getElementById("output").hidden = true;
+      document.getElementById("reader").hidden = false;
+      document.getElementById("controls").hidden = false;
+      start();
+    }
+
+    document.getElementById("start").addEventListener("click", start);
+    document.getElementById("stop").addEventListener("click", stop);
+    document.getElementById("again").addEventListener("click", scanAgain);
+  </script>
 </body>
 </html>
