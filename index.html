@@ -3,297 +3,319 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Card Scanner Demo</title>
-
-  <!-- Barcode/QR scanner -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
-  <!-- Barcode generator -->
-  <script src="https://cdn.jsdelivr.net/npm/bwip-js@4.5.1/dist/bwip-js-min.js"></script>
+  <title>Camera Photo Local Storage</title>
 
   <style>
     body {
+      margin: 0;
       font-family: system-ui, Arial, sans-serif;
-      margin: 16px;
-      background: #111;
-      color: #fff;
+      background: #0f172a;
+      color: white;
+      padding: 16px;
     }
 
-    h2 {
-      margin-top: 0;
+    h1 {
+      font-size: 22px;
+      margin: 8px 0 16px;
     }
 
-    .row {
+    .controls {
       display: flex;
-      gap: 8px;
       flex-wrap: wrap;
-      margin: 12px 0;
-    }
-
-    button, select {
-      padding: 10px 14px;
-      border-radius: 10px;
-      border: none;
-      font-size: 16px;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
     button {
-      background: #22c55e;
-      color: #08110a;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 16px;
       font-weight: 700;
+      cursor: pointer;
+      background: #22c55e;
+      color: #07130a;
     }
 
     button:disabled {
-      opacity: 0.5;
+      opacity: 0.45;
+      cursor: not-allowed;
     }
 
-    #stop {
+    #stopBtn {
       background: #ef4444;
       color: white;
     }
 
-    #reader {
-      width: 100%;
-      max-width: 700px;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #000;
+    #clearBtn {
+      background: #f59e0b;
+      color: #221100;
     }
 
-    #output {
-      margin-top: 20px;
-      padding: 16px;
-      border-radius: 12px;
-      background: #181818;
+    video {
+      width: 100%;
       max-width: 700px;
+      border-radius: 16px;
+      background: black;
+      display: block;
     }
 
     canvas {
-      background: white;
+      display: none;
+    }
+
+    .status {
+      margin: 12px 0;
+      color: #93c5fd;
+      font-weight: 600;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .card {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 10px;
+    }
+
+    .card img {
+      width: 100%;
       border-radius: 12px;
-      max-width: 100%;
-      margin-top: 12px;
+      display: block;
+      background: white;
     }
 
     .small {
-      color: #aaa;
-      font-size: 13px;
+      font-size: 12px;
+      color: #cbd5e1;
+      margin: 8px 0;
       word-break: break-word;
+    }
+
+    .card button {
+      width: 100%;
+      margin-top: 6px;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    .downloadBtn {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .deleteBtn {
+      background: #ef4444;
+      color: white;
     }
   </style>
 </head>
 
 <body>
-  <h2>Camera Card Scanner Demo</h2>
+  <h1>Camera Photo → localStorage</h1>
 
-  <div class="row" id="controls">
-    <select id="camera"></select>
-    <button id="start">Start Camera</button>
-    <button id="stop" disabled>Stop</button>
+  <div class="controls">
+    <button id="startBtn">Start Camera</button>
+    <button id="captureBtn" disabled>Take Photo</button>
+    <button id="stopBtn" disabled>Stop Camera</button>
+    <button id="clearBtn">Clear Saved Photos</button>
   </div>
 
-  <div id="reader"></div>
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="canvas"></canvas>
 
-  <div id="output" hidden>
-    <p><b>Detected format:</b> <span id="format"></span></p>
-    <p><b>Rendered as:</b> <span id="bcid"></span></p>
-    <p class="small"><b>Value:</b> <span id="value"></span></p>
+  <div class="status" id="status">Camera is off.</div>
 
-    <canvas id="barcode"></canvas>
-
-    <p class="small">
-      Turn screen brightness to maximum and present this code to the scanner.
-    </p>
-
-    <button id="again">Scan Again</button>
-  </div>
+  <h2>Saved Photos</h2>
+  <div class="gallery" id="gallery"></div>
 
   <script>
-    let scanner = null;
-    let scanning = false;
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const startBtn = document.getElementById("startBtn");
+    const captureBtn = document.getElementById("captureBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const statusText = document.getElementById("status");
+    const gallery = document.getElementById("gallery");
 
-    const supportedFormats =
-      typeof Html5QrcodeSupportedFormats !== "undefined"
-        ? Object.values(Html5QrcodeSupportedFormats).filter(v => typeof v === "number")
-        : [];
+    const STORAGE_KEY = "savedCameraPhotos";
 
-    const formatMap = {
-      QRCODE: "qrcode",
-      CODE128: "code128",
-      CODE39: "code39",
-      CODE93: "code93",
-      EAN13: "ean13",
-      EAN8: "ean8",
-      UPCA: "upca",
-      UPCE: "upce",
-      DATAMATRIX: "datamatrix",
-      PDF417: "pdf417",
-      ITF: "interleaved2of5",
-      CODABAR: "codabar"
-    };
+    let stream = null;
 
-    function normalizeFormat(name) {
-      return (name || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    function setStatus(message) {
+      statusText.textContent = message;
     }
 
-    function getFormatName(decodedResult) {
+    function getSavedPhotos() {
       try {
-        const f = decodedResult?.format;
-        if (!f) return "UNKNOWN";
-        if (typeof f === "string") return f;
-        return f.formatName || f.name || f.toString() || "UNKNOWN";
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const photos = JSON.parse(raw || "[]");
+        return Array.isArray(photos) ? photos : [];
       } catch {
-        return "UNKNOWN";
+        return [];
       }
     }
 
-    function chooseBcid(formatName, text) {
-      const n = normalizeFormat(formatName);
-
-      if (formatMap[n]) return formatMap[n];
-
-      if (n.includes("QR")) return "qrcode";
-      if (n.includes("128")) return "code128";
-      if (n.includes("39")) return "code39";
-      if (n.includes("93")) return "code93";
-      if (n.includes("EAN13")) return "ean13";
-      if (n.includes("EAN8")) return "ean8";
-      if (n.includes("UPC")) return "upca";
-      if (n.includes("PDF")) return "pdf417";
-      if (n.includes("DATA")) return "datamatrix";
-
-      if (/^https?:/i.test(text)) return "qrcode";
-
-      return "code128";
+    function savePhotosToStorage(photos) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
     }
 
-    function render(text, formatName) {
-      document.getElementById("format").textContent = formatName;
-      document.getElementById("value").textContent = text;
+    function renderGallery() {
+      gallery.innerHTML = "";
 
-      const bcid = chooseBcid(formatName, text);
-      document.getElementById("bcid").textContent = bcid;
+      const photos = getSavedPhotos();
 
-      const canvas = document.getElementById("barcode");
-
-      const is2D = ["qrcode", "datamatrix", "pdf417", "azteccode"].includes(bcid);
-
-      const options = {
-        bcid,
-        text,
-        scale: is2D ? 4 : 3,
-        backgroundcolor: "FFFFFF",
-        padding: 10
-      };
-
-      if (!is2D) {
-        options.includetext = true;
-        options.textxalign = "center";
-        options.height = 18;
+      if (!photos.length) {
+        gallery.innerHTML = "<p>No saved photos yet.</p>";
+        return;
       }
 
-      if (bcid === "qrcode") {
-        options.eclevel = "M";
-      }
+      photos.forEach(photo => {
+        const card = document.createElement("div");
+        card.className = "card";
 
+        const img = document.createElement("img");
+        img.src = photo.dataUrl;
+
+        const date = document.createElement("div");
+        date.className = "small";
+        date.textContent = new Date(photo.createdAt).toLocaleString();
+
+        const downloadButton = document.createElement("button");
+        downloadButton.className = "downloadBtn";
+        downloadButton.textContent = "Download";
+        downloadButton.onclick = () => {
+          const link = document.createElement("a");
+          link.href = photo.dataUrl;
+          link.download = `photo-${photo.id}.jpg`;
+          link.click();
+        };
+
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "deleteBtn";
+        deleteButton.textContent = "Delete";
+        deleteButton.onclick = () => {
+          const remaining = getSavedPhotos().filter(p => p.id !== photo.id);
+          savePhotosToStorage(remaining);
+          renderGallery();
+          setStatus("Photo deleted from localStorage.");
+        };
+
+        card.appendChild(img);
+        card.appendChild(date);
+        card.appendChild(downloadButton);
+        card.appendChild(deleteButton);
+
+        gallery.appendChild(card);
+      });
+    }
+
+    async function startCamera() {
       try {
-        bwipjs.toCanvas(canvas, options);
-      } catch (e) {
-        alert("Could not render barcode: " + e.message);
-      }
-
-      document.getElementById("reader").hidden = true;
-      document.getElementById("controls").hidden = true;
-      document.getElementById("output").hidden = false;
-    }
-
-    async function start() {
-      if (scanning) return;
-
-      try {
-        document.getElementById("output").hidden = true;
-        document.getElementById("reader").hidden = false;
-        document.getElementById("controls").hidden = false;
-
-        if (scanner) {
-          try {
-            scanner.clear();
-          } catch {}
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert("Camera is not supported here. Use Chrome/Edge/Safari on HTTPS or localhost.");
+          return;
         }
 
-        const cameras = await Html5Qrcode.getCameras();
-        const select = document.getElementById("camera");
-
-        if (select.options.length === 0) {
-          cameras.forEach((cam, i) => {
-            const opt = document.createElement("option");
-            opt.value = cam.id;
-            opt.textContent = cam.label || `Camera ${i + 1}`;
-            select.appendChild(opt);
-          });
-        }
-
-        scanner = new Html5Qrcode("reader", {
-          formatsToSupport: supportedFormats,
-          rememberLastUsedCamera: true
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: "environment",
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          }
         });
 
-        const cameraConfig = select.value
-          ? { deviceId: { exact: select.value } }
-          : { facingMode: "environment" };
+        video.srcObject = stream;
 
-        await scanner.start(
-          cameraConfig,
-          {
-            fps: 10,
-            qrbox: { width: 340, height: 220 },
-            aspectRatio: 1.7778
-          },
-          async (decodedText, decodedResult) => {
-            try {
-              await scanner.stop();
-              scanning = false;
+        await video.play();
 
-              document.getElementById("start").disabled = false;
-              document.getElementById("stop").disabled = true;
+        startBtn.disabled = true;
+        captureBtn.disabled = false;
+        stopBtn.disabled = false;
 
-              render(decodedText, getFormatName(decodedResult));
-            } catch {}
-          },
-          () => {}
-        );
-
-        scanning = true;
-        document.getElementById("start").disabled = true;
-        document.getElementById("stop").disabled = false;
-      } catch (e) {
-        alert("Start failed: " + (e?.message || e));
+        setStatus("Camera is running.");
+      } catch (error) {
+        console.error(error);
+        alert("Camera start failed: " + error.name + " - " + error.message);
+        setStatus("Camera failed to start.");
       }
     }
 
-    async function stop() {
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+
+      video.srcObject = null;
+
+      startBtn.disabled = false;
+      captureBtn.disabled = true;
+      stopBtn.disabled = true;
+
+      setStatus("Camera is off.");
+    }
+
+    function capturePhoto() {
+      if (!stream || !video.videoWidth) {
+        alert("Camera is not ready yet.");
+        return;
+      }
+
+      // Resize image so localStorage does not fill up too quickly.
+      const maxWidth = 1280;
+      const scale = Math.min(1, maxWidth / video.videoWidth);
+
+      canvas.width = Math.round(video.videoWidth * scale);
+      canvas.height = Math.round(video.videoHeight * scale);
+
+      const context = canvas.getContext("2d");
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+
+      const photos = getSavedPhotos();
+
+      photos.unshift({
+        id: Date.now(),
+        createdAt: new Date().toISOString(),
+        dataUrl: dataUrl
+      });
+
       try {
-        if (scanner && scanning) {
-          await scanner.stop();
-          scanner.clear();
-        }
-
-        scanning = false;
-        document.getElementById("start").disabled = false;
-        document.getElementById("stop").disabled = true;
-      } catch {}
+        savePhotosToStorage(photos);
+        renderGallery();
+        setStatus("Photo saved to localStorage.");
+      } catch (error) {
+        console.error(error);
+        alert("localStorage is full. Delete some photos or use IndexedDB for larger storage.");
+      }
     }
 
-    function scanAgain() {
-      document.getElementById("output").hidden = true;
-      document.getElementById("reader").hidden = false;
-      document.getElementById("controls").hidden = false;
-      start();
+    function clearSavedPhotos() {
+      const ok = confirm("Delete all saved photos from localStorage?");
+      if (!ok) return;
+
+      localStorage.removeItem(STORAGE_KEY);
+      renderGallery();
+      setStatus("All saved photos were deleted.");
     }
 
-    document.getElementById("start").addEventListener("click", start);
-    document.getElementById("stop").addEventListener("click", stop);
-    document.getElementById("again").addEventListener("click", scanAgain);
+    startBtn.addEventListener("click", startCamera);
+    stopBtn.addEventListener("click", stopCamera);
+    captureBtn.addEventListener("click", capturePhoto);
+    clearBtn.addEventListener("click", clearSavedPhotos);
+
+    // Initial render
+    renderGallery();
   </script>
 </body>
 </html>
