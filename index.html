@@ -3,20 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Camera Photo Local Storage</title>
+  <title>Camera API Card Scanner</title>
+
+  <!-- Barcode generator for displaying the digital visual code -->
+  <script src="https://cdn.jsdelivr.net/npm/bwip-js@4.5.1/dist/bwip-js-min.js"></script>
 
   <style>
     body {
       margin: 0;
+      padding: 16px;
       font-family: system-ui, Arial, sans-serif;
       background: #0f172a;
       color: white;
-      padding: 16px;
     }
 
     h1 {
-      font-size: 22px;
-      margin: 8px 0 16px;
+      margin: 0 0 8px;
+      font-size: 24px;
+    }
+
+    .warning {
+      color: #fca5a5;
+      font-size: 14px;
+      margin-bottom: 16px;
     }
 
     .controls {
@@ -52,29 +61,36 @@
       color: #221100;
     }
 
+    .danger {
+      background: #ef4444;
+      color: white;
+    }
+
     video {
       width: 100%;
-      max-width: 700px;
+      max-width: 720px;
       border-radius: 16px;
       background: black;
       display: block;
     }
 
-    canvas {
-      display: none;
-    }
-
-    .status {
+    #status {
       margin: 12px 0;
       color: #93c5fd;
       font-weight: 600;
+      word-break: break-word;
+    }
+
+    h2 {
+      margin-top: 28px;
+      font-size: 20px;
     }
 
     .gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 14px;
-      margin-top: 16px;
+      margin-top: 14px;
     }
 
     .card {
@@ -91,6 +107,13 @@
       background: white;
     }
 
+    .codeCanvas {
+      width: 100%;
+      border-radius: 12px;
+      margin-top: 10px;
+      background: white;
+    }
+
     .small {
       font-size: 12px;
       color: #cbd5e1;
@@ -98,133 +121,220 @@
       word-break: break-word;
     }
 
-    .card button {
+    .btnRow {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btnRow button {
       width: 100%;
-      margin-top: 6px;
       padding: 10px;
       font-size: 14px;
-    }
-
-    .downloadBtn {
-      background: #3b82f6;
-      color: white;
-    }
-
-    .deleteBtn {
-      background: #ef4444;
-      color: white;
     }
   </style>
 </head>
 
 <body>
-  <h1>Camera Photo → localStorage</h1>
+  <h1>Camera API Card Scanner</h1>
+
+  <div class="warning">
+    Works for visual barcode/QR cards only. It cannot clone NFC, RFID, payment,
+    magnetic stripe, hotel key, transit, or secure access cards.
+  </div>
 
   <div class="controls">
     <button id="startBtn">Start Camera</button>
-    <button id="captureBtn" disabled>Take Photo</button>
     <button id="stopBtn" disabled>Stop Camera</button>
-    <button id="clearBtn">Clear Saved Photos</button>
+    <button id="photoBtn" disabled>Save Photo Only</button>
+    <button id="clearBtn">Clear Saved Scans</button>
   </div>
 
+  <div id="status">Ready.</div>
+
   <video id="video" autoplay playsinline muted></video>
-  <canvas id="canvas"></canvas>
+  <canvas id="frameCanvas" hidden></canvas>
 
-  <div class="status" id="status">Camera is off.</div>
-
-  <h2>Saved Photos</h2>
+  <h2>Saved Scans</h2>
   <div class="gallery" id="gallery"></div>
 
   <script>
     const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
+    const frameCanvas = document.getElementById("frameCanvas");
+
     const startBtn = document.getElementById("startBtn");
-    const captureBtn = document.getElementById("captureBtn");
     const stopBtn = document.getElementById("stopBtn");
+    const photoBtn = document.getElementById("photoBtn");
     const clearBtn = document.getElementById("clearBtn");
-    const statusText = document.getElementById("status");
-    const gallery = document.getElementById("gallery");
 
-    const STORAGE_KEY = "savedCameraPhotos";
+    const statusEl = document.getElementById("status");
+    const galleryEl = document.getElementById("gallery");
 
-    let stream = null;
+    let mediaStream = null;
+    let scanTimer = null;
+    let detector = null;
+
+    let lastScan = {
+      value: "",
+      time: 0
+    };
+
+    const DB_NAME = "camera-card-scans";
+    const DB_STORE = "scans";
+
+    let dbPromise = null;
 
     function setStatus(message) {
-      statusText.textContent = message;
+      statusEl.textContent = message;
     }
 
-    function getSavedPhotos() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const photos = JSON.parse(raw || "[]");
-        return Array.isArray(photos) ? photos : [];
-      } catch {
-        return [];
+    function makeId() {
+      if (window.crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
       }
+      return Date.now().toString(36) + Math.random().toString(16).slice(2);
     }
 
-    function savePhotosToStorage(photos) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
+    function getDB() {
+      if (dbPromise) return dbPromise;
+
+      dbPromise = new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+
+        request.onupgradeneeded = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains(DB_STORE)) {
+            db.createObjectStore(DB_STORE, { keyPath: "id" });
+          }
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+
+      return dbPromise;
     }
 
-    function renderGallery() {
-      gallery.innerHTML = "";
+    async function addScan(record) {
+      const db = await getDB();
 
-      const photos = getSavedPhotos();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(DB_STORE, "readwrite");
+        const store = tx.objectStore(DB_STORE);
 
-      if (!photos.length) {
-        gallery.innerHTML = "<p>No saved photos yet.</p>";
+        store.add(record);
+
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function getAllScans() {
+      const db = await getDB();
+
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(DB_STORE, "readonly");
+        const store = tx.objectStore(DB_STORE);
+        const request = store.getAll();
+
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function deleteScan(id) {
+      const db = await getDB();
+
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(DB_STORE, "readwrite");
+        const store = tx.objectStore(DB_STORE);
+
+        store.delete(id);
+
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function clearScans() {
+      const db = await getDB();
+
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(DB_STORE, "readwrite");
+        const store = tx.objectStore(DB_STORE);
+
+        store.clear();
+
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function initDetector() {
+      if (!("BarcodeDetector" in window)) {
+        detector = null;
+        setStatus("BarcodeDetector API not supported. Photo capture only.");
         return;
       }
 
-      photos.forEach(photo => {
-        const card = document.createElement("div");
-        card.className = "card";
+      try {
+        const supportedFormats = await BarcodeDetector.getSupportedFormats();
 
-        const img = document.createElement("img");
-        img.src = photo.dataUrl;
+        const wantedFormats = [
+          "qr_code",
+          "code_128",
+          "code_39",
+          "code_93",
+          "ean_13",
+          "ean_8",
+          "upc_a",
+          "upc_e",
+          "data_matrix",
+          "pdf417"
+        ];
 
-        const date = document.createElement("div");
-        date.className = "small";
-        date.textContent = new Date(photo.createdAt).toLocaleString();
+        const formats = supportedFormats.filter(format =>
+          wantedFormats.includes(format)
+        );
 
-        const downloadButton = document.createElement("button");
-        downloadButton.className = "downloadBtn";
-        downloadButton.textContent = "Download";
-        downloadButton.onclick = () => {
-          const link = document.createElement("a");
-          link.href = photo.dataUrl;
-          link.download = `photo-${photo.id}.jpg`;
-          link.click();
-        };
+        detector = new BarcodeDetector(
+          formats.length ? { formats } : undefined
+        );
 
-        const deleteButton = document.createElement("button");
-        deleteButton.className = "deleteBtn";
-        deleteButton.textContent = "Delete";
-        deleteButton.onclick = () => {
-          const remaining = getSavedPhotos().filter(p => p.id !== photo.id);
-          savePhotosToStorage(remaining);
-          renderGallery();
-          setStatus("Photo deleted from localStorage.");
-        };
+        setStatus("BarcodeDetector API ready.");
+      } catch (error) {
+        console.error(error);
+        detector = null;
+        setStatus("BarcodeDetector failed. Photo capture only.");
+      }
+    }
 
-        card.appendChild(img);
-        card.appendChild(date);
-        card.appendChild(downloadButton);
-        card.appendChild(deleteButton);
+    function captureFrame(maxWidth = 1024) {
+      if (!video.videoWidth || !video.videoHeight) {
+        return null;
+      }
 
-        gallery.appendChild(card);
-      });
+      const scale = Math.min(1, maxWidth / video.videoWidth);
+
+      frameCanvas.width = Math.round(video.videoWidth * scale);
+      frameCanvas.height = Math.round(video.videoHeight * scale);
+
+      const context = frameCanvas.getContext("2d");
+      context.drawImage(video, 0, 0, frameCanvas.width, frameCanvas.height);
+
+      return frameCanvas.toDataURL("image/jpeg", 0.82);
     }
 
     async function startCamera() {
       try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          alert("Camera is not supported here. Use Chrome/Edge/Safari on HTTPS or localhost.");
+          alert("Camera API not supported. Use HTTPS or localhost.");
           return;
         }
 
-        stream = await navigator.mediaDevices.getUserMedia({
+        await initDetector();
+
+        mediaStream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: {
             facingMode: "environment",
@@ -233,86 +343,262 @@
           }
         });
 
-        video.srcObject = stream;
-
+        video.srcObject = mediaStream;
         await video.play();
 
         startBtn.disabled = true;
-        captureBtn.disabled = false;
         stopBtn.disabled = false;
+        photoBtn.disabled = false;
 
-        setStatus("Camera is running.");
+        setStatus(
+          detector
+            ? "Camera running. Scanning for barcode/QR..."
+            : "Camera running. Barcode detection unavailable."
+        );
+
+        if (detector) {
+          scanTimer = setInterval(scanFrame, 500);
+        }
       } catch (error) {
         console.error(error);
         alert("Camera start failed: " + error.name + " - " + error.message);
-        setStatus("Camera failed to start.");
       }
     }
 
     function stopCamera() {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
+      if (scanTimer) {
+        clearInterval(scanTimer);
+        scanTimer = null;
+      }
+
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
       }
 
       video.srcObject = null;
 
       startBtn.disabled = false;
-      captureBtn.disabled = true;
       stopBtn.disabled = true;
+      photoBtn.disabled = true;
 
-      setStatus("Camera is off.");
+      setStatus("Camera stopped.");
     }
 
-    function capturePhoto() {
-      if (!stream || !video.videoWidth) {
-        alert("Camera is not ready yet.");
+    async function scanFrame() {
+      if (!detector || video.readyState < 2) return;
+
+      try {
+        const barcodes = await detector.detect(video);
+
+        if (!barcodes || !barcodes.length) return;
+
+        const code = barcodes[0];
+        const now = Date.now();
+
+        // Prevent saving the same code repeatedly within 5 seconds.
+        if (
+          lastScan.value === code.rawValue &&
+          now - lastScan.time < 5000
+        ) {
+          return;
+        }
+
+        lastScan = {
+          value: code.rawValue,
+          time: now
+        };
+
+        const photo = captureFrame(1024);
+
+        const record = {
+          id: makeId(),
+          createdAt: new Date().toISOString(),
+          kind: "barcode",
+          format: code.format,
+          value: code.rawValue,
+          photo: photo
+        };
+
+        await addScan(record);
+        await renderGallery();
+
+        setStatus(`Saved: ${code.format} -> ${code.rawValue}`);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    async function savePhotoOnly() {
+      const photo = captureFrame(1280);
+
+      if (!photo) {
+        alert("Camera is not ready.");
         return;
       }
 
-      // Resize image so localStorage does not fill up too quickly.
-      const maxWidth = 1280;
-      const scale = Math.min(1, maxWidth / video.videoWidth);
-
-      canvas.width = Math.round(video.videoWidth * scale);
-      canvas.height = Math.round(video.videoHeight * scale);
-
-      const context = canvas.getContext("2d");
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
-
-      const photos = getSavedPhotos();
-
-      photos.unshift({
-        id: Date.now(),
+      const record = {
+        id: makeId(),
         createdAt: new Date().toISOString(),
-        dataUrl: dataUrl
-      });
+        kind: "photo",
+        format: null,
+        value: null,
+        photo: photo
+      };
+
+      await addScan(record);
+      await renderGallery();
+
+      setStatus("Photo saved locally.");
+    }
+
+    function formatToBcid(format) {
+      const map = {
+        qr_code: "qrcode",
+        code_128: "code128",
+        code_39: "code39",
+        code_93: "code93",
+        ean_13: "ean13",
+        ean_8: "ean8",
+        upc_a: "upca",
+        upc_e: "upce",
+        data_matrix: "datamatrix",
+        pdf417: "pdf417"
+      };
+
+      return map[format] || null;
+    }
+
+    function drawDigitalCode(canvas, record) {
+      if (!record.value || typeof bwipjs === "undefined") {
+        return false;
+      }
+
+      let bcid = formatToBcid(record.format);
+
+      if (!bcid) {
+        if (/^https?:/i.test(record.value)) {
+          bcid = "qrcode";
+        } else {
+          bcid = "code128";
+        }
+      }
 
       try {
-        savePhotosToStorage(photos);
-        renderGallery();
-        setStatus("Photo saved to localStorage.");
+        const is2D = ["qrcode", "datamatrix", "pdf417"].includes(bcid);
+
+        bwipjs.toCanvas(canvas, {
+          bcid: bcid,
+          text: record.value,
+          scale: 3,
+          backgroundcolor: "FFFFFF",
+          padding: 8,
+          includetext: !is2D,
+          textxalign: "center"
+        });
+
+        return true;
       } catch (error) {
         console.error(error);
-        alert("localStorage is full. Delete some photos or use IndexedDB for larger storage.");
+        return false;
       }
     }
 
-    function clearSavedPhotos() {
-      const ok = confirm("Delete all saved photos from localStorage?");
-      if (!ok) return;
+    async function renderGallery() {
+      const scans = await getAllScans();
 
-      localStorage.removeItem(STORAGE_KEY);
-      renderGallery();
-      setStatus("All saved photos were deleted.");
+      galleryEl.innerHTML = "";
+
+      if (!scans.length) {
+        galleryEl.innerHTML = "<p>No saved scans yet.</p>";
+        return;
+      }
+
+      scans.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      for (const scan of scans) {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const img = document.createElement("img");
+        img.src = scan.photo;
+
+        const info = document.createElement("div");
+        info.className = "small";
+        info.textContent =
+          scan.kind.toUpperCase() +
+          " | " +
+          (scan.format || "image") +
+          " | " +
+          new Date(scan.createdAt).toLocaleString();
+
+        const value = document.createElement("div");
+        value.className = "small";
+        value.textContent = scan.value
+          ? "Value: " + scan.value
+          : "No decoded value.";
+
+        const codeCanvas = document.createElement("canvas");
+        codeCanvas.className = "codeCanvas";
+
+        const codeDrawn = drawDigitalCode(codeCanvas, scan);
+
+        if (!codeDrawn) {
+          codeCanvas.style.display = "none";
+        }
+
+        const btnRow = document.createElement("div");
+        btnRow.className = "btnRow";
+
+        const downloadPhotoBtn = document.createElement("button");
+        downloadPhotoBtn.textContent = "Download Photo";
+
+        downloadPhotoBtn.onclick = () => {
+          const link = document.createElement("a");
+          link.href = scan.photo;
+          link.download = `scan-${scan.id}.jpg`;
+          link.click();
+        };
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.className = "danger";
+
+        deleteBtn.onclick = async () => {
+          await deleteScan(scan.id);
+          await renderGallery();
+          setStatus("Scan deleted.");
+        };
+
+        btnRow.appendChild(downloadPhotoBtn);
+        btnRow.appendChild(deleteBtn);
+
+        card.appendChild(img);
+        card.appendChild(info);
+        card.appendChild(value);
+
+        if (codeDrawn) {
+          card.appendChild(codeCanvas);
+        }
+
+        card.appendChild(btnRow);
+
+        galleryEl.appendChild(card);
+      }
     }
 
-    startBtn.addEventListener("click", startCamera);
-    stopBtn.addEventListener("click", stopCamera);
-    captureBtn.addEventListener("click", capturePhoto);
-    clearBtn.addEventListener("click", clearSavedPhotos);
+    startBtn.onclick = startCamera;
+    stopBtn.onclick = stopCamera;
+    photoBtn.onclick = savePhotoOnly;
+
+    clearBtn.onclick = async () => {
+      const ok = confirm("Delete all saved scans?");
+      if (!ok) return;
+
+      await clearScans();
+      await renderGallery();
+      setStatus("All saved scans deleted.");
+    };
 
     // Initial render
     renderGallery();
