@@ -3,1062 +3,328 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Baxnaano Hospital — Online Booking</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+<title>Electronic Card Generator</title>
+
+<!-- html2canvas library si loo soo dejiyo sawirka card-ka -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
-  :root{
-    --navy:#0a2540;
-    --navy-light:#1a3a5c;
-    --blue:#0066ff;
-    --blue-glow:rgba(0,102,255,0.15);
-    --sky:#4facfe;
-    --green:#00c853;
-    --green-glow:rgba(0,200,83,0.15);
-    --white:#ffffff;
-    --gray-50:#f8fafc;
-    --gray-100:#eef2f7;
-    --gray-200:#e2e8f0;
-    --gray-300:#cbd5e1;
-    --gray-500:#94a3b8;
-    --gray-700:#475569;
-    --text:#0f172a;
-    --danger:#ef4444;
-    --warn:#f59e0b;
-    --radius:16px;
-    --radius-sm:12px;
-    --shadow:0 1px 3px rgba(0,0,0,0.05),0 4px 20px rgba(10,37,64,0.08);
-    --shadow-lg:0 10px 40px rgba(10,37,64,0.12);
-    --glass:rgba(255,255,255,0.85);
-    --glass-border:rgba(255,255,255,0.5);
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{
-    margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-    background:linear-gradient(135deg,#f0f4f8 0%,#e2e8f0 50%,#f1f5f9 100%);
-    background-attachment:fixed;
-    color:var(--text);
-    min-height:100vh;
-  }
-  h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-0.02em;}
-  p{margin:0;}
-  button{font-family:inherit;cursor:pointer;border:none;}
-  input,select{font-family:inherit;}
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-  /* ===== Header ===== */
-  header.topbar{
-    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 50%,#0d2847 100%);
-    color:#fff;
-    padding:16px 20px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    position:sticky;
-    top:0;
-    z-index:50;
-    box-shadow:0 4px 20px rgba(10,37,64,0.2);
-    backdrop-filter:blur(10px);
-  }
-  .brand{display:flex;align-items:center;gap:12px;}
-  .brand .logo{
-    width:44px;height:44px;border-radius:14px;
-    background:linear-gradient(135deg,#fff 0%,#f0f4ff 100%);
-    display:flex;align-items:center;justify-content:center;
-    font-weight:900;color:var(--navy);font-size:22px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.15);
-  }
-  .brand-text .title{font-size:17px;font-weight:800;letter-spacing:0.5px;}
-  .brand-text .sub{font-size:11.5px;color:#94b8d9;letter-spacing:0.3px;}
-  .nav-toggle{display:flex;background:rgba(255,255,255,0.1);border-radius:999px;padding:4px;gap:2px;}
-  .nav-toggle button{
-    border:none;background:transparent;color:#b0c4de;padding:8px 18px;border-radius:999px;
-    font-size:13px;font-weight:600;transition:all 0.3s ease;
-  }
-  .nav-toggle button.active{
-    background:linear-gradient(135deg,#fff 0%,#f0f4ff 100%);
-    color:var(--navy);
-    box-shadow:0 2px 8px rgba(0,0,0,0.12);
-  }
+body{
+    background: #0f172a;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
 
-  main{max-width:640px;margin:0 auto;padding:20px 16px 80px;}
-  .view{display:none;}
-  .view.active{display:block;animation:fadeUp 0.4s cubic-bezier(0.16,1,0.3,1);}
-  @keyframes fadeUp{
-    from{opacity:0;transform:translateY(20px) scale(0.98);}
-    to{opacity:1;transform:translateY(0) scale(1);}
-  }
+.wrapper{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
 
-  /* ===== Cards ===== */
-  .card{
-    background:var(--glass);
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    padding:20px;
-    margin-bottom:16px;
-    border:1px solid var(--glass-border);
-    backdrop-filter:blur(20px);
-    transition:transform 0.2s ease,box-shadow 0.2s ease;
-  }
-  .card:hover{box-shadow:var(--shadow-lg);}
-  .section-title{display:flex;align-items:center;gap:10px;margin-bottom:12px;color:var(--navy);}
-  .section-title i{font-size:20px;color:var(--blue);}
-  .muted{color:var(--gray-500);font-size:13px;line-height:1.5;}
+.card{
+    width: 380px;
+    height: 230px;
+    border-radius: 20px;
+    padding: 22px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #071b35, #0b4260 50%, #081523);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
 
-  /* ===== Steps (3 steps only) ===== */
-  .stepper{display:flex;justify-content:space-between;margin:8px 0 24px;padding:0 8px;}
-  .step{flex:1;text-align:center;position:relative;}
-  .step .dot{
-    width:32px;height:32px;border-radius:50%;
-    background:var(--gray-200);color:var(--gray-500);
-    display:flex;align-items:center;justify-content:center;
-    margin:0 auto 6px;font-size:13px;font-weight:800;
-    transition:all 0.3s ease;
-    border:3px solid transparent;
-  }
-  .step.active .dot{
-    background:linear-gradient(135deg,var(--blue) 0%,var(--sky) 100%);
-    color:#fff;
-    box-shadow:0 4px 15px var(--blue-glow);
-    border-color:rgba(255,255,255,0.3);
-  }
-  .step.done .dot{
-    background:linear-gradient(135deg,var(--green) 0%,#00e676 100%);
-    color:#fff;
-    box-shadow:0 4px 15px var(--green-glow);
-  }
-  .step .lbl{font-size:11px;color:var(--gray-500);font-weight:600;transition:color 0.3s;}
-  .step.active .lbl{color:var(--navy);font-weight:700;}
-  .step:not(:last-child)::after{
-    content:'';position:absolute;top:16px;left:60%;width:80%;height:3px;
-    background:var(--gray-200);border-radius:99px;z-index:0;
-    transition:background 0.3s;
-  }
-  .step.done:not(:last-child)::after{background:linear-gradient(90deg,var(--green),#00e676);}
+/* Electronic futuristic lines */
+.card::before,
+.card::after{
+    content: "";
+    position: absolute;
+    border: 1px solid rgba(0, 220, 255, 0.25);
+    border-radius: 50%;
+}
 
-  /* ===== Doctor cards ===== */
-  .doctor-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  @media(max-width:420px){.doctor-grid{grid-template-columns:1fr;}}
-  .doc-card{
-    border:2px solid var(--gray-100);border-radius:var(--radius-sm);padding:14px;
-    cursor:pointer;transition:all 0.25s cubic-bezier(0.16,1,0.3,1);
-    background:linear-gradient(135deg,#fff 0%,#f8fafc 100%);
-    position:relative;overflow:hidden;
-  }
-  .doc-card::before{
-    content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--blue-glow) 0%,transparent 60%);
-    opacity:0;transition:opacity 0.3s;
-  }
-  .doc-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--blue);}
-  .doc-card:hover::before{opacity:1;}
-  .doc-card.selected{
-    border-color:var(--blue);
-    background:linear-gradient(135deg,var(--blue-light) 0%,#f0f7ff 100%);
-    box-shadow:0 4px 20px var(--blue-glow);
-  }
-  .doc-card.selected::before{opacity:1;}
-  .doc-photo{
-    width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:10px;
-    display:block;background:var(--gray-100);box-shadow:0 2px 8px rgba(0,0,0,0.06);
-  }
-  .doc-photo-icon{
-    display:flex;align-items:center;justify-content:center;font-size:36px;
-    color:var(--blue);background:linear-gradient(135deg,var(--blue-light) 0%,#f0f7ff 100%);
-  }
-  .doc-card .name{font-weight:800;font-size:14.5px;color:var(--navy);margin-bottom:3px;}
-  .doc-card .dept{font-size:12px;color:var(--gray-500);margin-bottom:8px;font-weight:500;}
-  .doc-card .fee{font-size:17px;font-weight:900;color:var(--blue);}
-  .doc-card .fee small{font-size:10.5px;font-weight:600;color:var(--gray-500);}
-  .doc-card .check{
-    position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;
-    background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;
-    font-size:14px;opacity:0;transform:scale(0);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  .doc-card.selected .check{opacity:1;transform:scale(1);}
+.card::before{
+    width: 300px;
+    height: 300px;
+    right: -130px;
+    top: -170px;
+}
 
-  /* ===== Form ===== */
-  label{display:block;font-size:12.5px;font-weight:700;color:var(--navy);margin:14px 0 6px;}
-  input[type=text],input[type=tel],input[type=number],input[type=date],input[type=time],select{
-    width:100%;padding:13px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-200);
-    font-size:15px;background:#fff;color:var(--text);transition:all 0.2s;
-  }
-  input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px var(--blue-glow);}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .patient-block{
-    border:2px dashed var(--gray-200);border-radius:var(--radius-sm);padding:14px 16px 8px;
-    margin-top:14px;position:relative;background:linear-gradient(135deg,#f8fafc 0%,#fff 100%);
-    transition:border-color 0.2s;
-  }
-  .patient-block:hover{border-color:var(--blue);}
-  .patient-block .rm{
-    position:absolute;top:10px;right:10px;background:none;border:none;color:var(--danger);
-    font-size:20px;cursor:pointer;width:32px;height:32px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;transition:background 0.2s;
-  }
-  .patient-block .rm:hover{background:rgba(239,68,68,0.1);}
-  .add-patient-btn{
-    width:100%;margin-top:12px;padding:12px;border:2px dashed var(--blue);border-radius:var(--radius-sm);
-    background:linear-gradient(135deg,var(--blue-light) 0%,#f0f7ff 100%);
-    color:var(--blue);font-weight:700;font-size:14px;transition:all 0.2s;
-  }
-  .add-patient-btn:hover{background:var(--blue);color:#fff;border-style:solid;}
+.card::after{
+    width: 250px;
+    height: 250px;
+    left: -150px;
+    bottom: -170px;
+}
 
-  /* ===== Buttons ===== */
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:10px;
-    padding:15px 20px;border-radius:var(--radius-sm);border:none;
-    font-weight:700;font-size:15px;width:100%;transition:all 0.25s cubic-bezier(0.16,1,0.3,1);
-    position:relative;overflow:hidden;
-  }
-  .btn::after{
-    content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.2) 0%,transparent 60%);
-    opacity:0;transition:opacity 0.3s;
-  }
-  .btn:hover::after{opacity:1;}
-  .btn:active{transform:scale(0.97);}
-  .btn-primary{
-    background:linear-gradient(135deg,var(--blue) 0%,var(--sky) 100%);
-    color:#fff;box-shadow:0 4px 15px var(--blue-glow);
-  }
-  .btn-primary:disabled{background:var(--gray-300);color:#fff;box-shadow:none;cursor:not-allowed;}
-  .btn-primary:disabled:hover::after{opacity:0;}
-  .btn-outline{
-    background:#fff;border:2px solid var(--blue);color:var(--blue);
-  }
-  .btn-outline:hover{background:var(--blue);color:#fff;}
-  .btn-ghost{background:transparent;color:var(--gray-500);}
-  .btn-ghost:hover{background:var(--gray-100);color:var(--navy);}
-  .btn-success{
-    background:linear-gradient(135deg,var(--green) 0%,#00e676 100%);
-    color:#fff;box-shadow:0 4px 15px var(--green-glow);
-  }
-  .btn-whatsapp{background:linear-gradient(135deg,#25D366 0%,#128C7E 100%);color:#fff;}
-  .btn-danger{background:var(--danger);color:#fff;}
-  .btn-row{display:flex;gap:12px;margin-top:16px;}
-  .btn-row .btn{flex:1;}
-  .btn-sm{padding:8px 14px;font-size:12px;width:auto;border-radius:10px;}
+.header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
 
-  /* ===== Summary ===== */
-  .summary-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--gray-200);font-size:14.5px;}
-  .summary-row:last-child{border-bottom:none;}
-  .summary-row .label{color:var(--gray-500);font-weight:500;}
-  .summary-row .val{font-weight:800;color:var(--navy);}
-  .total-row{font-size:19px;color:var(--navy);padding:14px 0;margin-top:4px;
-    background:linear-gradient(135deg,var(--blue-light) 0%,#f0f7ff 100%);
-    border-radius:var(--radius-sm);padding:14px 16px;
-  }
-  .total-row .label{color:var(--blue);}
-  .total-row .val{color:var(--blue);font-size:22px;}
+.logo{
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-  /* ===== USSD Box ===== */
-  .ussd-box{
-    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 50%,#0d2847 100%);
-    color:#fff;border-radius:var(--radius);padding:24px;text-align:center;margin:16px 0;
-    box-shadow:0 8px 30px rgba(10,37,64,0.25);
-  }
-  .ussd-box .label{color:#8ab4e8;font-size:12px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px;}
-  .ussd-code{
-    font-size:28px;font-weight:900;letter-spacing:2px;margin:10px 0;
-    font-family:'SF Mono',monospace;
-    background:linear-gradient(135deg,#fff 0%,#c8d8ee 100%);
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  }
-  .ussd-sub{color:#7aa3d9;font-size:12px;margin-top:8px;}
-  .pulse-ring{
-    width:60px;height:60px;border-radius:50%;
-    background:linear-gradient(135deg,var(--green) 0%,#00e676 100%);
-    display:flex;align-items:center;justify-content:center;
-    margin:0 auto 16px;box-shadow:0 4px 20px var(--green-glow);
-    animation:pulseScale 2s infinite;
-  }
-  @keyframes pulseScale{
-    0%{transform:scale(1);box-shadow:0 4px 20px var(--green-glow);}
-    50%{transform:scale(1.05);box-shadow:0 8px 30px var(--green-glow);}
-    100%{transform:scale(1);box-shadow:0 4px 20px var(--green-glow);}
-  }
-  .badge{display:inline-block;padding:5px 14px;border-radius:999px;font-size:11.5px;font-weight:700;}
-  .badge-pending{background:#fef3c7;color:#92400e;}
-  .badge-paid{background:#d1fae5;color:#065f46;}
-  .badge-completed{background:#dbeafe;color:#1e40af;}
-  .badge-cancelled{background:#fee2e2;color:#991b1b;}
+.power{
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
 
-  /* ===== Confirmation ===== */
-  .success-icon{
-    width:80px;height:80px;border-radius:50%;
-    background:linear-gradient(135deg,#d1fae5 0%,#a7f3d0 100%);
-    color:var(--green);display:flex;align-items:center;justify-content:center;
-    font-size:40px;margin:8px auto 16px;box-shadow:0 4px 20px var(--green-glow);
-    animation:successPop 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  @keyframes successPop{
-    0%{transform:scale(0) rotate(-45deg);}
-    70%{transform:scale(1.1) rotate(5deg);}
-    100%{transform:scale(1) rotate(0);}
-  }
-  .id-chip{
-    background:linear-gradient(135deg,var(--blue-light) 0%,#f0f7ff 100%);
-    color:var(--navy);border-radius:var(--radius-sm);padding:12px 16px;
-    text-align:center;font-weight:900;font-size:16px;letter-spacing:1px;margin:12px 0;
-    border:2px dashed var(--blue);font-family:'SF Mono',monospace;
-  }
-  .wa-preview{
-    background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);
-    border:2px solid #bbf7d0;border-radius:var(--radius-sm);
-    padding:16px;font-size:13.5px;white-space:pre-wrap;line-height:1.6;
-    color:#166534;font-family:system-ui;
-  }
+.power-dot{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #00ff88;
+    box-shadow: 0 0 12px #00ff88;
+    animation: pulse 1.2s infinite;
+}
 
-  /* ===== Admin ===== */
-  .admin-login{max-width:360px;margin:80px auto 0;}
-  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
-  .stat{
-    background:var(--glass);border-radius:var(--radius-sm);padding:14px 8px;
-    text-align:center;box-shadow:var(--shadow);border:1px solid var(--glass-border);
-    backdrop-filter:blur(10px);transition:transform 0.2s;
-  }
-  .stat:hover{transform:translateY(-2px);}
-  .stat .num{font-size:20px;font-weight:900;color:var(--navy);}
-  .stat .lbl{font-size:9.5px;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;}
-  .toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
-  .toolbar input,.toolbar select{flex:1;min-width:120px;}
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--gray-200);}
-  th{color:var(--gray-500);font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;}
-  tr{cursor:pointer;transition:background 0.15s;}
-  tr:hover{background:var(--blue-light);}
-  .appt-detail-modal{
-    position:fixed;inset:0;background:rgba(10,37,64,0.5);
-    display:none;align-items:flex-end;justify-content:center;z-index:200;
-    backdrop-filter:blur(4px);
-  }
-  .appt-detail-modal.active{display:flex;}
-  .sheet{
-    background:var(--glass);width:100%;max-width:520px;
-    border-radius:24px 24px 0 0;padding:24px;max-height:85vh;overflow:auto;
-    border:1px solid var(--glass-border);backdrop-filter:blur(20px);
-    box-shadow:0 -10px 40px rgba(0,0,0,0.1);
-    animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);
-  }
-  @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
-  .sheet-handle{width:40px;height:4px;background:var(--gray-300);border-radius:99px;margin:0 auto 16px;}
-  .empty-state{text-align:center;padding:40px 16px;color:var(--gray-500);}
-  .empty-state i{font-size:36px;display:block;margin-bottom:12px;color:var(--gray-300);}
-  .toast{
-    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
-    background:var(--navy);color:#fff;padding:14px 24px;
-    border-radius:var(--radius-sm);font-size:13.5px;box-shadow:var(--shadow-lg);
-    z-index:300;opacity:0;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);font-weight:600;
-  }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@keyframes pulse{
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50%{
+        opacity: 0.35;
+        transform: scale(0.7);
+    }
+}
 
-  #printArea{display:none;}
-  @media print{
-    body *{visibility:hidden;}
-    #printArea,#printArea *{visibility:visible;}
-    #printArea{display:block;position:fixed;top:0;left:0;width:100%;padding:20px;}
-  }
+.chip{
+    width: 48px;
+    height: 36px;
+    margin-top: 25px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, #d6b45c, #fff1a8, #b88b27);
+    position: relative;
+    z-index: 2;
+}
 
-  /* Loading overlay */
-  .loading-overlay{
-    position:fixed;inset:0;background:rgba(10,37,64,0.6);
-    display:none;align-items:center;justify-content:center;z-index:400;
-    backdrop-filter:blur(8px);
-  }
-  .loading-overlay.active{display:flex;}
-  .loading-box{
-    background:var(--glass);padding:32px 40px;border-radius:var(--radius);
-    text-align:center;backdrop-filter:blur(20px);border:1px solid var(--glass-border);
-    box-shadow:var(--shadow-lg);
-  }
-  .spinner{
-    width:48px;height:48px;border:4px solid var(--gray-200);
-    border-top-color:var(--blue);border-radius:50%;
-    animation:spin 0.8s linear infinite;margin:0 auto 16px;
-  }
-  @keyframes spin{to{transform:rotate(360deg);}}
+.chip::before,
+.chip::after{
+    content: "";
+    position: absolute;
+    background: #9b7824;
+}
 
-  /* Floating particles animation */
-  .particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-  .particle{
-    position:absolute;width:6px;height:6px;background:var(--blue);
-    border-radius:50%;opacity:0.08;animation:float 15s infinite;
-  }
-  @keyframes float{
-    0%,100%{transform:translateY(0) translateX(0);}
-    25%{transform:translateY(-100px) translateX(50px);}
-    50%{transform:translateY(-50px) translateX(-30px);}
-    75%{transform:translateY(-150px) translateX(20px);}
-  }
+.chip::before{
+    width: 100%;
+    height: 1px;
+    top: 18px;
+}
+
+.chip::after{
+    width: 1px;
+    height: 100%;
+    left: 24px;
+}
+
+.info{
+    position: absolute;
+    left: 22px;
+    bottom: 22px;
+    z-index: 2;
+    max-width: 250px;
+}
+
+.name{
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.id{
+    margin-top: 5px;
+    font-size: 12px;
+    opacity: 0.85;
+    letter-spacing: 2px;
+    color: #00d2ff;
+}
+
+.qr{
+    position: absolute;
+    right: 22px;
+    bottom: 22px;
+    width: 65px;
+    height: 65px;
+    background: white;
+    padding: 4px;
+    border-radius: 6px;
+    z-index: 3;
+}
+
+/* Controls Box */
+.controls{
+    background: #1e293b;
+    padding: 24px;
+    border-radius: 15px;
+    width: 380px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.controls input{
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    outline: none;
+    background: #0f172a;
+    color: white;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.controls input:focus{
+    border-color: #00a8ff;
+}
+
+.btn-group{
+    display: flex;
+    gap: 10px;
+}
+
+button{
+    flex: 1;
+    padding: 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #00a8ff;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover{
+    background: #008bd1;
+}
+
+button.download-btn{
+    background: #10b981;
+}
+
+button.download-btn:hover{
+    background: #059669;
+}
 </style>
 </head>
+
 <body>
 
-<div class="particles" id="particles"></div>
+<div class="wrapper">
 
-<header class="topbar">
-  <div class="brand">
-    <div class="logo">B</div>
-    <div class="brand-text">
-      <div class="title">BAXNAANO HOSPITAL</div>
-      <div class="sub">Online Booking &amp; USSD Payment</div>
-    </div>
-  </div>
-  <div class="nav-toggle">
-    <button id="navPatientBtn" class="active" onclick="switchMode('patient')">Bukaan</button>
-    <button id="navAdminBtn" onclick="switchMode('admin')">Admin</button>
-  </div>
-</header>
+    <!-- CARD -->
+    <div class="card" id="cardElement">
+        <div class="header">
+            <div class="logo">SMART CARD</div>
+            <div class="power">
+                <span class="power-dot"></span>
+                POWER
+            </div>
+        </div>
 
-<main>
+        <div class="chip"></div>
 
-  <!-- ============ PATIENT: BOOKING WIZARD (3 STEPS) ============ -->
-  <div id="view-booking" class="view active">
+        <div class="info">
+            <div class="name" id="cardName">ISSE SHOOLE</div>
+            <div class="id" id="cardId">ID: SC-2026-001</div>
+        </div>
 
-    <div class="stepper" id="stepper">
-      <div class="step active" data-step="1"><div class="dot">1</div><div class="lbl">Dhakhtar</div></div>
-      <div class="step" data-step="2"><div class="dot">2</div><div class="lbl">Xogta</div></div>
-      <div class="step" data-step="3"><div class="dot">3</div><div class="lbl">Xaqiiji & Bixi</div></div>
-    </div>
-
-    <!-- Step 1: choose doctor -->
-    <div class="wstep" id="wstep-1">
-      <div class="card">
-        <div class="section-title"><i class="bi bi-heart-pulse-fill"></i><h3>Dooro Dhakhtarka</h3></div>
-        <p class="muted">Dooro dhakhtarka aad rabto ballan la qabsato, ama dooro Family Consultation haddii ay yihiin 2+ qof.</p>
-        <div class="doctor-grid" id="doctorGrid"></div>
-      </div>
-      <button class="btn btn-primary" onclick="goStep(2)" id="toStep2Btn" disabled>Sii wad <i class="bi bi-arrow-right"></i></button>
+        <img
+            id="qrCode"
+            class="qr"
+            src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=Name:%20ISSE%20SHOOLE%20|%20ID:%20SC-2026-001"
+            alt="QR Code"
+        >
     </div>
 
-    <!-- Step 2: patient info -->
-    <div class="wstep" id="wstep-2" style="display:none;">
-      <div class="card">
-        <div class="section-title"><i class="bi bi-person-lines-fill"></i><h3>Xogta Bukaanka</h3></div>
-        <div id="patientsWrap"></div>
-        <button class="add-patient-btn" id="addPatientBtn" style="display:none" onclick="addPatientBlock()">
-          <i class="bi bi-plus-circle"></i> Ku dar Xubin Kale (Family)
-        </button>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-ghost" onclick="goStep(1)"><i class="bi bi-arrow-left"></i> Dib</button>
-        <button class="btn btn-primary" onclick="validateStep2()">Sii wad <i class="bi bi-arrow-right"></i></button>
-      </div>
+    <!-- CONTROLS -->
+    <div class="controls">
+        <input
+            id="nameInput"
+            type="text"
+            placeholder="Geli magaca..."
+            oninput="updateCard()"
+        >
+
+        <input
+            id="idInput"
+            type="text"
+            placeholder="Geli Card ID..."
+            oninput="updateCard()"
+        >
+
+        <div class="btn-group">
+            <button onclick="updateCard()">SAMEE CARD</button>
+            <button class="download-btn" onclick="downloadCard()">DOWNLOAD</button>
+        </div>
     </div>
 
-    <!-- Step 3: confirm + pay (merged) -->
-    <div class="wstep" id="wstep-3" style="display:none;">
-      <div class="card">
-        <div class="section-title"><i class="bi bi-clipboard2-check-fill"></i><h3>Xaqiiji & Bixi</h3></div>
-        <p class="muted"><i class="bi bi-info-circle"></i> Taariikhda iyo saacadda waxaa si otomaatig ah kuu qori doona nidaamka, sida ay u socoto safka (queue) dhakhtarka.</p>
-        <div id="summaryBox"></div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-ghost" onclick="goStep(2)"><i class="bi bi-arrow-left"></i> Dib</button>
-        <button class="btn btn-success" id="confirmPayBtn" onclick="confirmAndDial()">
-          <i class="bi bi-telephone-fill"></i> Xaqiiji & Wac USSD
-        </button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ============ PATIENT: CONFIRMATION ============ -->
-  <div id="view-confirmation" class="view">
-    <div class="card" style="text-align:center;padding:32px 20px;">
-      <div class="success-icon"><i class="bi bi-check-lg"></i></div>
-      <h3 style="font-size:22px;margin-bottom:8px;">Ballanka waa la xaqiijiyay!</h3>
-      <p class="muted" style="margin-bottom:16px;">Lacagtaada waa la helay. Ballankaaga wuu diyaar yahay.</p>
-      <div class="id-chip" id="confId"></div>
-      <p class="muted" id="confQueue" style="font-size:14px;margin-top:12px;"></p>
-    </div>
-    <div class="card">
-      <div class="section-title"><i class="bi bi-whatsapp" style="color:#25D366;"></i><h3>Fariinta Xaqiijinta</h3></div>
-      <div class="wa-preview" id="waPreview"></div>
-    </div>
-    <button class="btn btn-whatsapp" id="waBtn" onclick="openWhatsApp()">
-      <i class="bi bi-whatsapp"></i> Fur WhatsApp
-    </button>
-    <div class="btn-row" style="margin-top:12px;">
-      <button class="btn btn-outline" onclick="printReceipt(currentApptId)">
-        <i class="bi bi-printer"></i> Print
-      </button>
-      <button class="btn btn-ghost" onclick="resetBooking()">
-        <i class="bi bi-plus-circle"></i> Ballan Cusub
-      </button>
-    </div>
-  </div>
-
-  <!-- ============ ADMIN: LOGIN ============ -->
-  <div id="view-admin-login" class="view">
-    <div class="card admin-login">
-      <div class="section-title"><i class="bi bi-shield-lock-fill"></i><h3>Admin Login</h3></div>
-      <label>PIN-ka Maamulka</label>
-      <input type="password" id="adminPinInput" placeholder="Geli PIN-ka" inputmode="numeric" style="text-align:center;letter-spacing:4px;font-size:18px;">
-      <button class="btn btn-primary" style="margin-top:16px;" onclick="tryAdminLogin()">Gal (Login)</button>
-      <p class="muted" style="margin-top:14px;text-align:center;">PIN-ka hore u dhigan: <b style="color:var(--navy);">baxnaano123</b></p>
-    </div>
-  </div>
-
-  <!-- ============ ADMIN: DASHBOARD ============ -->
-  <div id="view-admin-dashboard" class="view">
-    <div class="stat-grid">
-      <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">Total</div></div>
-      <div class="stat"><div class="num" id="statPaid">0</div><div class="lbl">Paid</div></div>
-      <div class="stat"><div class="num" id="statPending">0</div><div class="lbl">Pending</div></div>
-      <div class="stat"><div class="num" id="statRevenue">$0</div><div class="lbl">Revenue</div></div>
-    </div>
-
-    <div class="card">
-      <div class="toolbar">
-        <input type="text" id="searchInput" placeholder="Search magac/telefoon..." oninput="renderAdminTable()">
-        <select id="statusFilter" onchange="renderAdminTable()">
-          <option value="">All Status</option>
-          <option>Pending</option>
-          <option>Paid</option>
-          <option>Completed</option>
-          <option>Cancelled</option>
-        </select>
-      </div>
-      <div style="overflow-x:auto;">
-        <table>
-          <thead><tr><th>ID</th><th>Bukaanka</th><th>Dhakhtar</th><th>Taariikh</th><th>Fee</th><th>Status</th></tr></thead>
-          <tbody id="adminTableBody"></tbody>
-        </table>
-      </div>
-      <div id="adminEmpty" class="empty-state" style="display:none;">
-        <i class="bi bi-inbox"></i>Wax ballan ah lama helin.
-      </div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn btn-outline" onclick="exportCSV()"><i class="bi bi-download"></i> Export CSV</button>
-      <button class="btn btn-ghost" onclick="adminLogout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
-    </div>
-  </div>
-
-</main>
-
-<!-- APPOINTMENT DETAIL SHEET (admin) -->
-<div class="appt-detail-modal" id="apptDetailModal" onclick="closeApptDetail(event)">
-  <div class="sheet" onclick="event.stopPropagation()">
-    <div class="sheet-handle"></div>
-    <div id="apptDetailContent"></div>
-  </div>
 </div>
-
-<!-- LOADING OVERLAY -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-box">
-    <div class="spinner"></div>
-    <p style="color:var(--navy);font-weight:700;font-size:15px;">Ballanka waa la sameynayaa...</p>
-    <p class="muted" style="margin-top:4px;">Fadlan sug ilaa USSD-ga la waco</p>
-  </div>
-</div>
-
-<!-- PRINT AREA -->
-<div id="printArea"></div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-/* =========================================================
-   BAXNAANO HOSPITAL — Booking & USSD Payment System v2
-   3-step wizard, beautified UI, direct USSD dial
-   ========================================================= */
+function updateCard() {
+    let nameVal = document.getElementById("nameInput").value.trim();
+    let idVal = document.getElementById("idInput").value.trim();
 
-const USSD_PAY_NUMBER = "613490055";
-const WHATSAPP_NUMBER = "252613490055";
-const ADMIN_PIN_KEY = "bh_admin_pin";
-const APPTS_KEY = "bh_appointments";
-const CARDS_KEY = "bh_cards";
+    // Qiimaha caadiga ah haddii la tirtiro meesha wax lagu qoro
+    let name = nameVal ? nameVal : "ISSE SHOOLE";
+    let id = idVal ? idVal : "SC-2026-001";
 
-const DOCTORS = {
-  yahye:  {name:"Dr. Yahye Shole",  dept:"Carruurta (Pediatrician)", fee:10, icon:"bi-emoji-smile", photo:null},
-  harith: {name:"Dr. Harith Shole", dept:"Neerfaha (Neurologist)",   fee:10, icon:"bi-activity", photo:null},
-  hersi:  {name:"Dr. Hersi",        dept:"Cudurrada Guud & Uurkujirta", fee:10, icon:"bi-heart-pulse", photo:null},
-  sadio:  {name:"Dr. Sadio Omar",   dept:"Daaweynta Hadalka (Speech Therapy)", fee:21, icon:"bi-chat-dots", photo:null},
-  family: {name:"Family Consultation", dept:"2+ qof — $7 qofkiiba", fee:7, icon:"bi-people-fill", photo:null}
-};
+    // Qoraalada Card-ka oo la cusbooneysiiyo
+    document.getElementById("cardName").textContent = name.toUpperCase();
+    document.getElementById("cardId").textContent = "ID: " + id;
 
-let state = {
-  doctorKey: null,
-  patients: [],
-  date: "",
-  time: "",
-};
-let currentApptId = null;
-
-/* ---------- helpers ---------- */
-function uid(prefix){ return prefix + "-" + Math.random().toString(36).slice(2,7).toUpperCase(); }
-function load(key, fallback){ try{ const v = JSON.parse(localStorage.getItem(key)); return v===null||v===undefined?fallback:v; }catch(e){ return fallback; } }
-function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
-function toast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2500);
-}
-function fmtDate(d){
-  if(!d) return "";
-  const dt = new Date(d+"T00:00:00");
-  return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    // Cusbooneysiinta QR Code-ka
+    let qrData = encodeURIComponent(`Name: ${name} | ID: ${id}`);
+    document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
 }
 
-/* ---------- init defaults ---------- */
-if(!localStorage.getItem(ADMIN_PIN_KEY)) save(ADMIN_PIN_KEY, "baxnaano123");
-if(!localStorage.getItem(APPTS_KEY)) save(APPTS_KEY, []);
-if(!localStorage.getItem(CARDS_KEY)){
-  save(CARDS_KEY, [
-    { cardId:"BH-CARD-0001", name:"Fadumo Cashuur Cumar", phone:"0617675424", degmada:"Wadajir", gender:"Dumar", age:"" }
-  ]);
-}
-
-/* Create floating particles */
-(function createParticles(){
-  const container = document.getElementById('particles');
-  for(let i=0;i<15;i++){
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.left = Math.random()*100 + '%';
-    p.style.top = Math.random()*100 + '%';
-    p.style.animationDelay = (Math.random()*15) + 's';
-    p.style.animationDuration = (10+Math.random()*10) + 's';
-    container.appendChild(p);
-  }
-})();
-
-/* ==================== NAV ==================== */
-function switchMode(mode){
-  document.getElementById('navPatientBtn').classList.toggle('active', mode==='patient');
-  document.getElementById('navAdminBtn').classList.toggle('active', mode==='admin');
-  if(mode==='patient'){
-    document.getElementById('view-booking').classList.add('active');
-    document.getElementById('view-confirmation').classList.remove('active');
-    document.getElementById('view-admin-login').classList.remove('active');
-    document.getElementById('view-admin-dashboard').classList.remove('active');
-  } else {
-    document.getElementById('view-booking').classList.remove('active');
-    document.getElementById('view-confirmation').classList.remove('active');
-    const loggedIn = sessionStorage.getItem('bh_admin_logged') === '1';
-    document.getElementById('view-admin-login').classList.toggle('active', !loggedIn);
-    document.getElementById('view-admin-dashboard').classList.toggle('active', loggedIn);
-    if(loggedIn) renderAdminTable();
-  }
-}
-
-/* ==================== STEP 1: doctor grid ==================== */
-function renderDoctorGrid(){
-  const grid = document.getElementById('doctorGrid');
-  grid.innerHTML = '';
-  Object.entries(DOCTORS).forEach(([key,doc])=>{
-    const el = document.createElement('div');
-    el.className = 'doc-card' + (state.doctorKey===key ? ' selected':'');
-    el.onclick = ()=>selectDoctor(key);
-    const photoHtml = doc.photo 
-      ? `<img src="${doc.photo}" alt="${doc.name}" class="doc-photo">`
-      : `<div class="doc-photo doc-photo-icon"><i class="bi ${doc.icon}"></i></div>`;
-    el.innerHTML = `
-      ${photoHtml}
-      <div class="check"><i class="bi bi-check-lg"></i></div>
-      <div class="name">${doc.name}</div>
-      <div class="dept">${doc.dept}</div>
-      <div class="fee">$${doc.fee} <small>${key==='family'?'/qof':'/booking'}</small></div>
-    `;
-    grid.appendChild(el);
-  });
-}
-function selectDoctor(key){
-  state.doctorKey = key;
-  state.patients = [];
-  renderDoctorGrid();
-  document.getElementById('toStep2Btn').disabled = false;
-}
-
-/* ==================== STEP 2: patient info ==================== */
-function patientTemplate(idx, data={}){
-  return `
-  <div class="patient-block" data-idx="${idx}">
-    ${idx>0 ? `<button class="rm" onclick="removePatientBlock(${idx})"><i class="bi bi-x-circle-fill"></i></button>` : ''}
-    <label>Magaca oo dhamaystiran ${idx>0?'(Xubinta '+(idx+1)+')':''}</label>
-    <input type="text" class="p-name" placeholder="Tusaale: Cali Xasan Mohamed" value="${data.name||''}">
-    <div class="row2">
-      <div>
-        <label>Lambarka Telefoonka</label>
-        <input type="tel" class="p-phone" placeholder="06XXXXXXXX" value="${data.phone||''}">
-      </div>
-      <div>
-        <label>Da'da (Age)</label>
-        <input type="number" min="0" max="120" class="p-age" placeholder="Tusaale: 28" value="${data.age||''}">
-      </div>
-    </div>
-    <div class="row2">
-      <div>
-        <label>Gender</label>
-        <select class="p-gender">
-          <option value="Lab" ${data.gender==='Lab'?'selected':''}>Lab (Male)</option>
-          <option value="Dumar" ${data.gender==='Dumar'?'selected':''}>Dumar (Female)</option>
-        </select>
-      </div>
-      <div>
-        <label>Degmada</label>
-        <input type="text" class="p-degmada" list="degmoList" placeholder="Tusaale: Wadajir" value="${data.degmada||''}">
-      </div>
-    </div>
-  </div>`;
-}
-function renderPatients(){
-  const wrap = document.getElementById('patientsWrap');
-  if(state.patients.length < 1) state.patients = [{}];
-  wrap.innerHTML = `<datalist id="degmoList">
-    ${["Wadajir","Hodan","Karaan","Wardhiigley","Yaqshid","Boondheere","Cabdulcasiis","Warta Nabadda","Dayniile","Kaxda","Xamar Weyne","Xamar Jajab","Shangaani","Shibis","Heliwaa","Hawlwadaag"].map(d=>`<option value="${d}">`).join('')}
-  </datalist>` + state.patients.map((p,i)=>patientTemplate(i,p)).join('');
-  document.getElementById('addPatientBtn').style.display = (state.doctorKey==='family') ? 'block' : 'none';
-}
-function addPatientBlock(){
-  state.patients.push({});
-  renderPatients();
-}
-function removePatientBlock(idx){
-  state.patients.splice(idx,1);
-  renderPatients();
-}
-function collectPatientsFromDOM(){
-  const blocks = document.querySelectorAll('.patient-block');
-  const list = [];
-  blocks.forEach(b=>{
-    list.push({
-      name: b.querySelector('.p-name').value.trim(),
-      phone: b.querySelector('.p-phone').value.trim(),
-      age: b.querySelector('.p-age').value.trim(),
-      gender: b.querySelector('.p-gender').value,
-      degmada: b.querySelector('.p-degmada').value.trim(),
-    });
-  });
-  return list;
-}
-function validateStep2(){
-  const list = collectPatientsFromDOM();
-  for(const p of list){
-    if(!p.name || !p.phone || !p.degmada){
-      toast("Fadlan buuxi Magaca, Telefoonka iyo Degmada.");
-      return;
-    }
-  }
-  if(state.doctorKey==='family' && list.length < 2){
-    toast("Family Consultation waa inuu ka kooban yahay 2 qof ama in ka badan.");
-    return;
-  }
-  state.patients = list;
-  const slot = computeAssignedSlot(state.doctorKey);
-  state.date = slot.date;
-  state.time = slot.time;
-  state.queueNumber = slot.queueNumber;
-  goStep(3);
-}
-
-/* ==================== AUTO QUEUE-BASED SCHEDULING ==================== */
-const OPEN_HOUR = 8, CLOSE_HOUR = 19, SLOT_MINUTES = 15;
-
-function toISODate(d){
-  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${day}`;
-}
-function countQueueForDay(doctorKey, dateStr){
-  const all = load(APPTS_KEY, []);
-  return all.filter(a=>a.doctorKey===doctorKey && a.date===dateStr && a.status!=='Cancelled').length;
-}
-function computeAssignedSlot(doctorKey){
-  const now = new Date();
-  let apptDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const nowMinutes = now.getHours()*60 + now.getMinutes();
-  const openMin = OPEN_HOUR*60, closeMin = CLOSE_HOUR*60;
-  let baselineMin;
-
-  if(nowMinutes >= closeMin){
-    apptDate.setDate(apptDate.getDate()+1);
-    baselineMin = openMin;
-  } else if(nowMinutes < openMin){
-    baselineMin = openMin;
-  } else {
-    baselineMin = Math.ceil(nowMinutes/5)*5;
-  }
-
-  let dateStr = toISODate(apptDate);
-  let queuePos = countQueueForDay(doctorKey, dateStr);
-  let assignedMin = baselineMin + queuePos*SLOT_MINUTES;
-
-  let guard = 0;
-  while(assignedMin >= closeMin && guard < 30){
-    apptDate.setDate(apptDate.getDate()+1);
-    dateStr = toISODate(apptDate);
-    queuePos = countQueueForDay(doctorKey, dateStr);
-    assignedMin = openMin + queuePos*SLOT_MINUTES;
-    guard++;
-  }
-
-  const hh = String(Math.floor(assignedMin/60)).padStart(2,'0');
-  const mm = String(assignedMin%60).padStart(2,'0');
-  return { date: dateStr, time: `${hh}:${mm}`, queueNumber: queuePos+1 };
-}
-
-/* ==================== STEP 3: summary + direct USSD ==================== */
-function calcFee(){
-  const doc = DOCTORS[state.doctorKey];
-  if(state.doctorKey==='family') return doc.fee * state.patients.length;
-  return doc.fee;
-}
-function renderSummary(){
-  const doc = DOCTORS[state.doctorKey];
-  const fee = calcFee();
-  const box = document.getElementById('summaryBox');
-  box.innerHTML = `
-    <div class="summary-row"><span class="label">Dhakhtar</span><span class="val">${doc.name}</span></div>
-    <div class="summary-row"><span class="label">Qaybta</span><span class="val">${doc.dept}</span></div>
-    <div class="summary-row"><span class="label">Bukaanada</span><span class="val">${state.patients.map(p=>p.name).join(', ')}</span></div>
-    <div class="summary-row"><span class="label">Taariikh (otomaatig)</span><span class="val">${fmtDate(state.date)}, ${state.time}</span></div>
-    <div class="summary-row"><span class="label">Lambarka Safka (Queue)</span><span class="val">#${state.queueNumber}</span></div>
-    <div class="summary-row total-row"><span class="label">Wadarta Lacagta</span><span class="val">$${fee}</span></div>
-  `;
-}
-
-/* MAIN: Confirm booking, save it, then immediately dial USSD */
-function confirmAndDial(){
-  const btn = document.getElementById('confirmPayBtn');
-  btn.disabled = true;
-  
-  // Create appointment
-  const appt = {
-    id: uid("BH"),
-    createdAt: new Date().toISOString(),
-    doctorKey: state.doctorKey,
-    doctorName: DOCTORS[state.doctorKey].name,
-    department: DOCTORS[state.doctorKey].dept,
-    patients: state.patients,
-    date: state.date,
-    time: state.time,
-    queueNumber: state.queueNumber,
-    fee: calcFee(),
-    status: "Pending",
-    paymentMethod: "USSD",
-    paidAt: null
-  };
-  
-  const all = load(APPTS_KEY, []);
-  all.unshift(appt);
-  save(APPTS_KEY, all);
-  currentApptId = appt.id;
-
-  // Build USSD code
-  const ussdCode = `*712*${USSD_PAY_NUMBER}*${appt.fee}#`;
-  
-  // Show loading
-  document.getElementById('loadingOverlay').classList.add('active');
-  
-  // Small delay for UX, then dial USSD
-  setTimeout(()=>{
-    // Dial USSD
-    const telHref = 'tel:' + encodeURIComponent(ussdCode).replace(/%2A/g,'*');
-    window.location.href = telHref;
+// Shaqada lagu soo dejisanayo Card-ka oo sawir ah
+function downloadCard() {
+    const cardElement = document.getElementById('cardElement');
     
-    // Hide loading after a moment
-    setTimeout(()=>{
-      document.getElementById('loadingOverlay').classList.remove('active');
-      // Show confirmation view (user will come back from dialer)
-      showConfirmation(appt);
-      // Also try to open WhatsApp in background
-      const msg = buildWaMessage(appt);
-      const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-      window.open(waUrl, '_blank');
-    }, 1500);
-    
-    btn.disabled = false;
-  }, 800);
-}
-
-/* ==================== CONFIRMATION + WhatsApp ==================== */
-function buildWaMessage(appt){
-  const namesList = appt.patients.map(p=>p.name.toUpperCase()).join(", ");
-  return `*BAXNAANO HOSPITAL*
-
-*Magaca Bukaanka:* ${namesList}
-*Lambarka:* ${appt.patients[0].phone}
-*Dhakhtarka:* ${appt.doctorName.toUpperCase()}
-*Qaybta:* ${appt.department}
-
-*FAAHFAAHINTA BALANQAADKA*
-*Taariikhda:* ${fmtDate(appt.date)}, ${appt.time}
-*Lacagta:* $${appt.fee}
-*Lambarka Balanqaadka:* ${appt.id}
-
-FADLAN SII JOOG ILAA LAGU SOO WACO.
-MAHADSANID.`;
-}
-function showConfirmation(appt){
-  document.getElementById('view-booking').classList.remove('active');
-  document.getElementById('view-confirmation').classList.add('active');
-  document.getElementById('confId').textContent = appt.id;
-  document.getElementById('confQueue').innerHTML = `<i class="bi bi-clock-history"></i> Lambarka Safka: <b>#${appt.queueNumber}</b> — ${fmtDate(appt.date)}, ${appt.time}`;
-  const msg = buildWaMessage(appt);
-  document.getElementById('waPreview').textContent = msg;
-  document.getElementById('waBtn').setAttribute('data-msg', encodeURIComponent(msg));
-}
-function openWhatsApp(){
-  const msg = document.getElementById('waBtn').getAttribute('data-msg');
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
-}
-function resetBooking(){
-  state = {doctorKey:null, patients:[], date:"", time:"", queueNumber:null};
-  currentApptId = null;
-  renderDoctorGrid();
-  document.getElementById('toStep2Btn').disabled = true;
-  goStep(1);
-  document.getElementById('view-confirmation').classList.remove('active');
-  document.getElementById('view-booking').classList.add('active');
-}
-
-/* ==================== STEP NAVIGATION ==================== */
-function goStep(n){
-  document.querySelectorAll('.wstep').forEach(el=>el.style.display='none');
-  document.getElementById('wstep-'+n).style.display='block';
-  document.querySelectorAll('.step').forEach(el=>{
-    const s = parseInt(el.dataset.step);
-    el.classList.toggle('active', s===n);
-    el.classList.toggle('done', s<n);
-  });
-  if(n===2) renderPatients();
-  if(n===3) renderSummary();
-}
-
-/* ==================== ADMIN ==================== */
-function tryAdminLogin(){
-  const val = document.getElementById('adminPinInput').value.trim();
-  const stored = load(ADMIN_PIN_KEY, "baxnaano123");
-  if(val === stored){
-    sessionStorage.setItem('bh_admin_logged','1');
-    document.getElementById('view-admin-login').classList.remove('active');
-    document.getElementById('view-admin-dashboard').classList.add('active');
-    renderAdminTable();
-  } else {
-    toast("PIN khalad ah. Isku day mar kale.");
-  }
-}
-function adminLogout(){
-  sessionStorage.removeItem('bh_admin_logged');
-  document.getElementById('adminPinInput').value = '';
-  switchMode('admin');
-}
-function renderAdminTable(){
-  const all = load(APPTS_KEY, []);
-  const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
-  const statusF = document.getElementById('statusFilter')?.value || '';
-  const filtered = all.filter(a=>{
-    const matchesQ = !q || a.patients.some(p=>p.name.toLowerCase().includes(q) || p.phone.includes(q)) || a.id.toLowerCase().includes(q);
-    const matchesS = !statusF || a.status===statusF;
-    return matchesQ && matchesS;
-  });
-  document.getElementById('statTotal').textContent = all.length;
-  document.getElementById('statPaid').textContent = all.filter(a=>a.status==='Paid'||a.status==='Completed').length;
-  document.getElementById('statPending').textContent = all.filter(a=>a.status==='Pending').length;
-  document.getElementById('statRevenue').textContent = '$' + all.filter(a=>a.status==='Paid'||a.status==='Completed').reduce((s,a)=>s+a.fee,0);
-
-  const body = document.getElementById('adminTableBody');
-  body.innerHTML = '';
-  document.getElementById('adminEmpty').style.display = filtered.length ? 'none':'block';
-  filtered.forEach(a=>{
-    const tr = document.createElement('tr');
-    tr.onclick = ()=>openApptDetail(a.id);
-    const badgeClass = {Pending:'badge-pending',Paid:'badge-paid',Completed:'badge-completed',Cancelled:'badge-cancelled'}[a.status];
-    tr.innerHTML = `
-      <td><b>${a.id}</b></td>
-      <td>${a.patients[0].name}${a.patients.length>1?` <span style="color:var(--blue)">+${a.patients.length-1}</span>`:''}</td>
-      <td>${a.doctorName.replace('Dr. ','')}</td>
-      <td>${fmtDate(a.date)}</td>
-      <td><b>$${a.fee}</b></td>
-      <td><span class="badge ${badgeClass}">${a.status}</span></td>
-    `;
-    body.appendChild(tr);
-  });
-}
-function openApptDetail(id){
-  const all = load(APPTS_KEY, []);
-  const a = all.find(x=>x.id===id);
-  if(!a) return;
-  const content = document.getElementById('apptDetailContent');
-  content.innerHTML = `
-    <h3 style="color:var(--navy);margin-bottom:4px;">${a.id}</h3>
-    <p class="muted">${fmtDate(a.date)}, ${a.time} — ${a.doctorName} — Safka #${a.queueNumber||'-'}</p>
-    <div class="card" style="margin-top:14px;padding:16px;">
-      ${a.patients.map(p=>`
-        <div class="summary-row" style="padding:8px 0;"><span class="label">${p.name}</span><span class="val">${p.phone} · ${p.age||'-'}y · ${p.gender} · ${p.degmada}</span></div>
-      `).join('')}
-      <div class="summary-row total-row" style="margin-top:8px;"><span class="label">Fee</span><span class="val">$${a.fee}</span></div>
-      <div class="summary-row"><span class="label">Payment</span><span class="val">${a.paymentMethod}${a.paidAt ? ' · '+new Date(a.paidAt).toLocaleString() : ''}</span></div>
-    </div>
-    <label style="margin-top:16px;">Beddel Xaaladda (Status)</label>
-    <select id="statusSelect" onchange="updateStatus('${a.id}', this.value)" style="margin-bottom:16px;">
-      ${['Pending','Paid','Completed','Cancelled'].map(s=>`<option ${a.status===s?'selected':''}>${s}</option>`).join('')}
-    </select>
-    <div class="btn-row">
-      <button class="btn btn-outline" onclick="printReceipt('${a.id}')"><i class="bi bi-printer"></i> Print</button>
-      <button class="btn btn-ghost" onclick="closeApptDetail(event)">Xir</button>
-    </div>
-  `;
-  document.getElementById('apptDetailModal').classList.add('active');
-}
-function closeApptDetail(e){
-  if(e) e.stopPropagation();
-  document.getElementById('apptDetailModal').classList.remove('active');
-}
-function updateStatus(id, status){
-  const all = load(APPTS_KEY, []);
-  const a = all.find(x=>x.id===id);
-  if(a){ a.status = status; if(status==='Paid' && !a.paidAt) a.paidAt = new Date().toISOString(); save(APPTS_KEY, all); }
-  renderAdminTable();
-  toast("Xaaladda waa la cusboonaysiiyay.");
-}
-function exportCSV(){
-  const all = load(APPTS_KEY, []);
-  const rows = [["ID","Patient","Phone","Doctor","Department","Date","Time","Fee","Status","PaidAt"]];
-  all.forEach(a=>{
-    a.patients.forEach(p=>{
-      rows.push([a.id,p.name,p.phone,a.doctorName,a.department,a.date,a.time,a.fee,a.status,a.paidAt||'']);
+    html2canvas(cardElement, {
+        scale: 2, // Sawir tayo sare leh
+        backgroundColor: null
+    }).then(canvas => {
+        let link = document.createElement('a');
+        link.download = 'smart-card.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
     });
-  });
-  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv],{type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url; link.download = 'baxnaano_appointments.csv';
-  link.click();
-  URL.revokeObjectURL(url);
 }
-
-/* ==================== PRINT RECEIPT ==================== */
-function printReceipt(id){
-  const all = load(APPTS_KEY, []);
-  const a = all.find(x=>x.id===id);
-  if(!a) return;
-  const area = document.getElementById('printArea');
-  area.innerHTML = `
-    <div style="font-family:Arial,sans-serif;max-width:420px;">
-      <h2 style="color:#0a2540;margin-bottom:0;">BAXNAANO HOSPITAL</h2>
-      <p style="color:#666;margin-top:2px;">Appointment Receipt</p>
-      <hr>
-      <p><b>Booking ID:</b> ${a.id}</p>
-      <p><b>Doctor:</b> ${a.doctorName} — ${a.department}</p>
-      <p><b>Date/Time:</b> ${fmtDate(a.date)}, ${a.time} (Queue #${a.queueNumber||'-'})</p>
-      <p><b>Status:</b> ${a.status}</p>
-      <hr>
-      ${a.patients.map(p=>`<p>${p.name} — ${p.phone} — ${p.gender}, ${p.age||'-'}y — ${p.degmada}</p>`).join('')}
-      <hr>
-      <p><b>Total Fee:</b> $${a.fee}</p>
-      <p style="color:#888;font-size:11px;margin-top:20px;">Waad ku mahadsan tahay inaad doorateen Baxnaano Hospital.</p>
-    </div>
-  `;
-  window.print();
-}
-
-/* ==================== INIT ==================== */
-renderDoctorGrid();
-switchMode('patient');
 </script>
+
 </body>
 </html>
